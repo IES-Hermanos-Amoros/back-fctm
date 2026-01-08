@@ -1,7 +1,7 @@
 const documentModel = require("../models/documentManager.model")
 
 //devolver documentos
-exports.getAll() = documentModel.find()
+exports.getAll = () => documentModel.find()
 
 //devolver documento por su id
 exports.getById = async (id) => documentModel.findById(id)
