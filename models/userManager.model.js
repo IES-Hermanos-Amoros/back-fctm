@@ -117,7 +117,7 @@ userManagerSchema.pre('findOneAndUpdate', function (next) {
     next();
 });
 
-const userManager = mongoose.model('userManager', userManagerSchema);
+const userManager = mongoose.model('UserManager', userManagerSchema);
 
 userManager.findByFilter = async(filter) => {
     const usersList = await userManager.find(filter)
@@ -147,7 +147,12 @@ userManager.insertUpdateManyUsers = async function(userDataListToInsert, userDat
 
                     // Recorremos los campos modificados y los agregamos a la actualización
                     user.SAO_MODIFIED_FIELDS.forEach(campo => {
-                        if (campo.field && campo.SAO_Value) {
+                        /*
+                            Esto permite actualizar con valores vacíos '' y con 0, false, etc., 
+                            pero sigue evitando undefined y null
+                        */
+                        //if (campo.field && campo.SAO_Value) {                        
+                        if (campo.field && campo.SAO_Value !== undefined && campo.SAO_Value !== null) {
                             updateFields[campo.field] = campo.SAO_Value;
                         }
                     });

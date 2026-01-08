@@ -27,11 +27,11 @@ const actionSchema = new mongoose.Schema({
     },
 
     // Usuario al que se le realizó la acción (relación con userManager)
-    FCTM_user_id: {
+    /*FCTM_user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "UserManager",
         required: true
-    },
+    },*/
 
     // Quién realizó la acción (por si la lleva a cabo otro usuario del sistema)
     FCTM_created_by: {
@@ -58,13 +58,28 @@ const actionSchema = new mongoose.Schema({
         ref: "DocumentManager",
         default: []
     }]
-});
+},
+  {
+    timestamps: true, // Crea automáticamente createdAt y updatedAt
+    versionKey: false, // Elimina el campo __v
+  }
+);
 
 // Middleware para actualizar la fecha de actualización
 actionSchema.pre("save", function (next) {
     this.FCTM_updated_date = new Date();
     next();
 });
+
+
+// Virtual para resolver el usuario vinculado desde la propia acción leyendo quién lo tiene en su array
+actionSchema.virtual("usuario_relacionado", {
+  ref: "UserManager",
+  localField: "_id",
+  foreignField: "FCTM_actions",
+  justOne: true
+});
+
 
 const ActionManager = mongoose.model("ActionManager", actionSchema);
 

@@ -59,6 +59,21 @@ documentSchema.pre("save", function (next) {
     next();
 });
 
+// 🔥 Virtual: acciones que contienen este documento
+documentSchema.virtual("acciones_relacionadas", {
+    ref: "ActionManager",
+    localField: "_id",
+    foreignField: "FCTM_documents",
+});
+
+// 🔥 Virtual: usuarios que tienen este documento en su array FCTM_documents
+documentSchema.virtual("usuarios_relacionados", {
+    ref: "UserManager",
+    localField: "_id",
+    foreignField: "FCTM_documents",
+});
+
+
 const DocumentManager = mongoose.model("DocumentManager", documentSchema);
 
 module.exports = DocumentManager;
