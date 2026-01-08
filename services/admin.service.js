@@ -1,32 +1,21 @@
 const Admin = require('../models/userManager.model')
 
 exports.getAllAdmins = async () => {
-  if (Admin.SAO_profile == 'ADMINISTRADOR') {
-    return await Admin.find()
-  } else {
-    return await json({
-      message: 'No tiene permisos para acceder a esta información',
-    })
-  }
+  await Admin.find({SAO_profile: 'ADMINISTRADOR'})
 }
 
 exports.getAdminById = async id => await Admin.findById(id)
 
 exports.update = async (id, data) => {
-  if (Admin.SAO_profile == 'ADMINISTRADOR') {
-    for (const campo in data) {
-      if (dato.hasOwnProperty(campo) && typeof data[campo] === 'string') {
-        const regex = new RegExp(`^${'FCTM_'}`, 'i')
-        if (!regex.test(data[campo])) {
-          console.log('Los campos deben empezar por FCTM_')
-          return await json({ message: 'Los campos deben empezar por FCTM_' })
-        }
+  for (const campo in data) {
+    if (Object.prototype.hasOwnProperty.call(data, campo)) {
+      const regex = /^FCTM_/i
+      if (!regex.test(campo)) {
+        throw new Error(`El campo '${campo}' no es válido. Debe empezar por FCTM_`)
       }
-      return await Admin.findByIdAndUpdate(id, data)
     }
-  } else {
-    return await json({
-      message: 'No tiene permisos para acceder a esta información',
-    })
   }
+  return await Admin.findByIdAndUpdate(id, data, { new: true })
 }
+
+
