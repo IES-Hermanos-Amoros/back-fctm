@@ -25,3 +25,4 @@ router.patch("/:id",documentController.editDocumentById)
 router.delete("/:id",documentController.deleteDocumentById)
 
 
+module.exports = router
