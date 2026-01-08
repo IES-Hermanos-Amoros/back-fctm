@@ -11,7 +11,7 @@ router.get("/:id",jobOfferController.findJobOfferById)
 
 router.patch("/:id",jobOfferController.editJobOffer)
 
-router.delete("/:id",jobOfferController.removeJobOffer)
+router.delete("/:id",jobOfferController.deleteJobOffer)
 
 //Exportar rutas
 module.exports = router

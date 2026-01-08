@@ -10,6 +10,7 @@ const port = process.env.PORT || process.env.PUERTO
 
 const mongodbConfig = require("./utils/mongodb.config")
 const saoRoutes = require("./routes/sao.routes")
+const jobOfferRoutes = require("./routes/joboffer.routes")
 
 
 const morganMW = require("./middlewares/morgan.mw")
@@ -20,6 +21,7 @@ const cors = require("cors")
 //INI WebSocket
 const http = require('http');
 const socketIo = require('socket.io');
+const JobOfferManager = require("./models/jobOfferManager.model")
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
@@ -85,6 +87,7 @@ app.use(session({
 //RUTAS
 
 app.use(`/api/${process.env.API_VERSION}/sao`,saoRoutes(io))
+app.use(`/api/${process.env.API_VERSION}/jobOffer`, jobOfferRoutes)
 
 
 //Middleware propio para las rutas no existentes
@@ -99,7 +102,8 @@ app.use(errorHandlerMW.errorHandler)
 //HTTP
 server.listen(port, async()=>{
     console.log(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/sao`)
-    logger.access.info(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/sao`)
+    console.log(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/jobOffer`)
+    logger.access.info(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/jobOffer`)
     try {
         //Una vez levantado el servidor, intentamos conectar con MongoDB
         await mongodbConfig.conectarMongoDB()

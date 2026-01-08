@@ -1,10 +1,11 @@
 const jobOfferModel = require('../models/jobOfferManager.model')
 
 //Devolver todas las ofertas de trabajo
-exports.getAllJobOffer = async () => await jobOfferModel.find().populate("DocumentManager", "FCTM_document_name")
+exports.getAllJobOffer = async () => await jobOfferModel.find()
+//.populate("DocumentManager", "FCTM_document_name")
 
 //Devolver una oferta de trabajo por ID
-exports.getJobOfferById = async (id) => await jobOfferModel.findById(id).populate("DocumentManager", "FCTM_document_name")
+exports.getJobOfferById = async (id) => await jobOfferModel.findById(id)//.populate("DocumentManager", "FCTM_document_name")
 
 //Crear una nueva oferta de trabajo
 exports.createJobOffer = async (data) => {
