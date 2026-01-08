@@ -22,6 +22,6 @@ router.get("/:id",documentController.getDocumentById)
 router.patch("/:id",documentController.editDocumentById)
 
 //DELETE - Borrar un Documento
-router.delete("/:id",documentController.deleteDocumentByID)
+router.delete("/:id",documentController.deleteDocumentById)
 
 
