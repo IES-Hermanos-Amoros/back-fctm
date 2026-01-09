@@ -1,38 +1,30 @@
 const teacherService = require('../services/teacher.service')
+const { wrapAsync } = require("../utils/functions")
+const AppError = require("../utils/AppError")
 
-exports.findAllTeachers = async (req, res) => {
-  try {
-    const teachers = await teacherService.findAllTeachers()
-    res.render("teachers/list", { teachers })
-  } catch (error) {
-    res.status(500).send(error.message)
-  }
-}
-
-exports.findTeacherById = async (req, res) => {
-  try {
-    const teacher = await teacherService.findTeacherById(req.params.id)
-    if (!teacher) {
-      return res.status(404).send('Profesor no encontrado')
+exports.findAllTeachers = wrapAsync(async (req, res, next) => {
+    let teachers = await teacherService.getAll()
+    if(teachers.lengh > 0) {
+    res.status(200).json(teachers)
+    }else{
+        next(new AppError("Sin Profesores",404))
     }
-    res.render("teachers/detail", { teacher })
-  } catch (error) {
-    res.status(500).send(error.message)
-  }
-}
+})
 
-exports.editTeacher = async (req, res) => {
-    try {
-        const teacher = await teacherService.updateTeacher(req.params.id, req.body)
-        if (!teacher) {
-            return res.status(404).send('Profesor no encontrado')
-        }
-        res.redirect(`/teachers/${teacher.id}`)
-    } catch (error) {
-        res.status(500).send(error.message)
+exports.findTeacherById = wrapAsync(async (req, res, next) => {
+    const teacher = await teacherService.getById(req.params.id)
+    if(teacher) {
+    res.status(200).json(teacher)
+    } else {
+        next(new AppError("Profesor no encontrado", 404))
     }
-}
+})
 
-
- 
-   
+exports.editTeacher = wrapAsync(async (req, res, next) => {
+    const updatedTeacher = await teacherService.update(req.params.id, req.body)
+    if(updatedTeacher) {
+    res.status(200).json(updatedTeacher)
+    } else {
+        next(new AppError("No se pudo actualizar el profesor", 400))
+    }
+})
