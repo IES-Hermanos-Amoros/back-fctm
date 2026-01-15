@@ -10,7 +10,7 @@ const port = process.env.PORT || process.env.PUERTO
 
 const mongodbConfig = require("./utils/mongodb.config")
 const saoRoutes = require("./routes/sao.routes")
-
+const adminRoutes = require("./routes/admin.routes")
 
 const morganMW = require("./middlewares/morgan.mw")
 const logger = require("./utils/logger")
@@ -74,18 +74,18 @@ app.use(session({
     saveUninitialized:false,//No se guardará en el store hasta que no se inicialice de alguna forma
     cookie:{
         secure:false,//la sesión se enviará sólo en HTTPS (si está a true)
-        maxAge:3600000, //1hora (tiempo expiración cookie SID)        
+        maxAge:3600000, //1hora (tiempo expiración cookie SID)
         //TEMPORAL PARA EJS
         sameSite:"none", //Permite envío de cookies en solicitudes entre diferentes dominios (CORS habilitado), pero requiere secure:true
         httpOnly:false
-    }    
+    }
 }))
 
 
 //RUTAS
 
 app.use(`/api/${process.env.API_VERSION}/sao`,saoRoutes(io))
-
+app.use(`/api/${process.env.API_VERSION}/admin`,adminRoutes)
 
 //Middleware propio para las rutas no existentes
 app.use((req,res)=>{

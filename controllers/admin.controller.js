@@ -19,7 +19,7 @@ exports.getAdminById = async (req, res) => {
   }
 }
 
-exports.editAdmin = async (req, res) => {
+exports.editAdminById = async (req, res) => {
   try {
     const updatedAdmin = await adminService.update(req.params.id, req.body)
     if (!updatedAdmin) res.status(404).json({ error: 'Admin no encontrado' })

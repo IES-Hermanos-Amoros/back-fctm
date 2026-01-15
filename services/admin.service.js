@@ -3,7 +3,7 @@ const Admin = require('../models/userManager.model')
 exports.getAllAdmins = async () => await Admin.find({SAO_profile: 'ADMINISTRADOR'})
 
 
-exports.getAdminById = async id => await Admin.findById(id)
+exports.getAdminById = async id => await Admin.findById(id, {SAO_profile: 'ADMINISTRADOR'})
 
 exports.update = async (id, data) => {
   for (const campo in data) {
