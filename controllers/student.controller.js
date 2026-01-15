@@ -10,7 +10,7 @@ exports.getAllStudents = async (req, res) => {
   }
 }
 
-// Obtener un alumno por ID
+// Mostrar un alumno por ID
 exports.getStudentById = async (req, res) => {
   try {
     const { id } = req.params
