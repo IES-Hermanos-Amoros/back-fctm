@@ -25,15 +25,21 @@ exports.getCompanyById = wrapAsync(async (req,res,next) => {
     }
 })
 
-exports.editCompanyById = wrapAsync(async (req,res,next) => {
-    const {id} = req.params
-    const commpanyUpdated = await CompanyService.update(id,req.body)
-    if(commpanyUpdated){
-        res.status(200).json(commpanyUpdated)
-    } else {
+exports.editCompanyById = wrapAsync(async (req, res, next) => {
+const { id } = req.params;
+const companyUpdated = await CompanyService.update(id, req.body);
 
-        next(new AppError("ERROR al actualizar",500))
+if (companyUpdated === 'ERR_SAO') {
+return next(new AppError("error SAO", 400));
+}
 
-    }    
+if (companyUpdated === null) {
+return next(new AppError("ERROR al actualizar, no hay FCTM", 400));
+}
+
+if (!companyUpdated) {
+return next(new AppError("Compañía no encontrada", 404));
+}
+
+res.status(200).json(companyUpdated);
 })
-
