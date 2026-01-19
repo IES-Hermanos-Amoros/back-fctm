@@ -1,6 +1,6 @@
 const CompanyService = require("../services/company.service.js")
 const { wrapAsync } = require("../utils/functions")
-const AppError = require("../utils/appError")
+const AppError = require("../utils/AppError")
 
 exports.getAllCompanies = wrapAsync(async (req,res,next) => {
     let companies = []

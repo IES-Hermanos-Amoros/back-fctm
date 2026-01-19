@@ -10,7 +10,7 @@ router.get('/', studentController.getAllStudents)
 router.get('/:id', studentController.getStudentById)
 
 // PUT/:id - actualizar alumno por id
-router.put('/:id', studentController.updateStudentFctm)
+router.patch('/:id', studentController.updateStudentFctm)
 
 // Exportar rutas
 module.exports = router

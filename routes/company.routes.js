@@ -9,7 +9,7 @@ router.get("/", companyController.getAllCompanies)
 router.get("/:id", companyController.getCompanyById)
 
 // PUT - Actualizar empresa
-router.put("/:id", companyController.editCompanyById)
+router.patch("/:id", companyController.editCompanyById)
 
 // Exportar Rutas
 module.exports = router

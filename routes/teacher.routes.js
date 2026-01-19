@@ -9,7 +9,7 @@ router.get("/",teacherController.findAllTeachers)
 router.get("/:id",teacherController.findTeacherById)
 
 // PUT -> Updatear un teacher
-router.put("/:id",teacherController.editTeacher)
+router.patch("/:id",teacherController.editTeacher)
 
 // Exportar rutas
 module.exports = router

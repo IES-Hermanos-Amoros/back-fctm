@@ -1,4 +1,4 @@
-const jobOfferService = require("../services/jobOffer.service")
+const jobOfferService = require("../services/joboffer.service")
 
 exports.findAllJobOffers = async(req,res)=>{
     try {
