@@ -1,7 +1,7 @@
 const Admin = require('../models/userManager.model')
 
-exports.getAllAdmins = async () =>
-  await Admin.find({ SAO_profile: 'ADMINISTRADOR' })
+exports.getAllAdmins = async () => await Admin.find({SAO_profile: 'ADMINISTRADOR'})
+
 
 exports.getAdminById = async id =>
   await Admin.findOne({ _id: id, SAO_profile: 'ADMINISTRADOR' })
