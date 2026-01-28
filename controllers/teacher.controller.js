@@ -21,6 +21,12 @@ exports.findTeacherById = wrapAsync(async (req, res, next) => {
 })
 
 exports.editTeacher = wrapAsync(async (req, res, next) => {
+    const tieneCamposFCTM = Object.keys(req.body)
+        .some(key => key.startsWith("FCTM_"))
+    if (!tieneCamposFCTM) {
+        return next(new AppError("No se pudo actualizar: los campos deben empezar por FCTM_",403))
+    }
+
     const updatedTeacher = await teacherService.update(req.params.id, req.body)
     if(updatedTeacher) {
         res.status(200).json(updatedTeacher)

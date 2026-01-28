@@ -10,6 +10,13 @@ const port = process.env.PORT || process.env.PUERTO
 
 const mongodbConfig = require("./utils/mongodb.config")
 const saoRoutes = require("./routes/sao.routes")
+const jobOfferRoutes = require("./routes/joboffer.routes")
+const documentRoutes = require("./routes/document.routes")
+const adminRoutes = require("./routes/admin.routes")
+const teacherRoutes = require("./routes/teacher.routes")
+const studentRoutes = require("./routes/student.routes")
+const companyRoutes = require("./routes/company.routes")
+
 
 
 const morganMW = require("./middlewares/morgan.mw")
@@ -85,6 +92,13 @@ app.use(session({
 //RUTAS
 
 app.use(`/api/${process.env.API_VERSION}/sao`,saoRoutes(io))
+app.use(`/api/${process.env.API_VERSION}/joboffers`,jobOfferRoutes)
+app.use(`/api/${process.env.API_VERSION}/documents`,documentRoutes)
+app.use(`/api/${process.env.API_VERSION}/administrators`,adminRoutes)
+app.use(`/api/${process.env.API_VERSION}/teachers`,teacherRoutes)
+app.use(`/api/${process.env.API_VERSION}/students`,studentRoutes)
+app.use(`/api/${process.env.API_VERSION}/companies`,companyRoutes)
+
 
 
 //Middleware propio para las rutas no existentes
