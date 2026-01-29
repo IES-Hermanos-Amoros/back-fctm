@@ -15,7 +15,7 @@ exports.getActionById = async (req,res) => {
     const { id } = req.params
     const action = await ActionService.getById(id)
     if(action){
-        res.status(200).json(document)
+        res.status(200).json(action)
     } else {
         res.status(404).json("Acción no encontrada")
     }
@@ -27,7 +27,7 @@ exports.newAction = async (req,res) => {
     if(actionCreado){
         res.status(200).json(actionCreado)
     } else {
-        res.status(500).json("Error al crear el documento")
+        res.status(500).json("Error al crear el acción")
     }
 }
 
