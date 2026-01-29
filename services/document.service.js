@@ -1,9 +1,11 @@
 const documentModel = require("../models/documentManager.model")
+const ActionManager = require("../models/actionManager.model"); // Importante para el populate
+const userManager = require("../models/userManager.model");    // Importante para la búsqueda de usuarios
 
 //devolver documentos
 exports.getAll = async() => //documentModel.find()
 {
-    const documents = await DocumentManager.find()
+    const documents = await documentModel.find()
     .populate({
         path: "acciones_relacionadas", // virtual real de 1 nivel, esto sí existe
         select: "FCTM_action_title FCTM_action_type FCTM_action_notes FCTM_action_datetime FCTM_documents FCTM_created_by FCTM_updated_date"
