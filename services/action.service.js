@@ -1,7 +1,7 @@
 const actionModel = require("../models/actionManager.model")
 
 //Obtener todas las acciones
-exports.getAll() = () => actionModel.find()
+exports.getAll = () => actionModel.find()
 
 //Obtener accion por id
 exports.getById = async(id) => actionModel.findById(id)
