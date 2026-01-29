@@ -1,7 +1,7 @@
 const reviewModel = require("../models/reviewManager.model")
 
 //Devolver todos los comentarios
-exports.getAll = async () => await reviewModel.find()
+exports.getAll = async () => await reviewModel.find({})
 
 //Devolver un comentario por ID
 //SELECT * from Comments WHERE _id = id
