@@ -65,12 +65,3 @@ exports.deleteReviewById = async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar la reseña.' })
   }
 }
-
-exports.getNewReview = async (req, res) => {
-  try {
-    const review = await reviewService.getNewReview()
-    res.status(200).json(review)
-  } catch (error) {
-    res.status(500).json({ error: 'Error al obtener la reseña.' })
-  }
-}
