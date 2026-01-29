@@ -3,7 +3,7 @@ const reviewService = require('../services/review.service')
 exports.getAllReviews = async (req, res) => {
   try {
     const reviews = await reviewService.getAll()
-    res.status(200).josn(reviews)
+    res.status(200).json(reviews)
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener todas las reseñas.' })
   }
@@ -25,28 +25,23 @@ exports.getReviewById = async (req, res) => {
 
 exports.createReview = async (req, res) => {
   try {
-    const { id } = req.params
-    const review = await reviewService.create(id)
-    if(!review){
-        res.status(404).json({ error: 'No se encontró la reseña.'})
-    }
-
-    res.status(200).json(review)
+    const review = await reviewService.create(req.body)
+    res.status(201).json({ ...review, message: 'Reseña creada correctamente.' })
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener la reseña.' })
+    res.status(500).json({ error: 'Error al crear la reseña.' })
   }
 }
 
 exports.editReviewById = async (req, res) => {
   try {
     const { id } = req.params
-    const { rating, comment } = req.body
-    const review = await reviewService.update(id, rating, comment)
+    const comment = req.body
+    const review = await reviewService.update(id, comment)
     if(!review){
         res.status(404).json({ error: 'No se encontró la reseña.'})
     }
 
-    res.status(200).json(review)
+    res.status(200).json({ ...review, message: 'Reseña actualizada correctamente.' })
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar la reseña.' })
   }
@@ -60,7 +55,7 @@ exports.deleteReviewById = async (req, res) => {
         res.status(404).json({ error: 'No se encontró la reseña.'})
     }
 
-    res.status(200).json(review)
+    res.status(200).json({...review, message: 'Reseña eliminada correctamente.'})
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar la reseña.' })
   }
