@@ -11,10 +11,10 @@ router.post("/",actionController.newAction)
 //mostrar accion por id
 router.get("/:id",actionController.getActionById)
 
-//Updatear un job offer
+//Updatear una acion
 router.put("/:id",actionController.editActionById)
 
-//Borrar un job offer
+//Borrar una accion
 router.delete("/:id",actionController.deleteActionById)
 
 //Exportar rutas
