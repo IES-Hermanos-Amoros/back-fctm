@@ -5,7 +5,7 @@ const {wrapAsync} = require("../utils/functions")
 const AppError = require("../utils/AppError")
 const jwtMW = require("../middlewares/jwt.mw")
 //TEMPORAL
-const ejemplo = require("../utils/others/companyList_Ejemplo3.json")
+//const ejemplo = require("../utils/others/companyList_Ejemplo3.json")
 
 exports.showLogin = (req,res) => {
     res.render("SAO/loginSAO.ejs")
