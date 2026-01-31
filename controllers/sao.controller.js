@@ -4,7 +4,12 @@ const fctManagerModel = require("../models/fctManager.model")
 const {wrapAsync} = require("../utils/functions")
 const AppError = require("../utils/AppError")
 const jwtMW = require("../middlewares/jwt.mw")
+//TEMPORAL
+const ejemplo = require("../utils/others/companyList_Ejemplo3.json")
 
+exports.showLogin = (req,res) => {
+    res.render("SAO/loginSAO.ejs")
+}
 
 exports.login = wrapAsync(async (req,res,next)=>{
     //const { username, password } = req.body    
@@ -40,7 +45,12 @@ exports.login = wrapAsync(async (req,res,next)=>{
 })
 
 exports.companies = (io) => wrapAsync(async (req,res,next)=>{
-    const userData = req.decoded.userData        
+    //const userData = req.decoded.userData - TEMPORAL
+    const userData = req.body     
+    console.log(userData)   
+    
+    //TEMPORAL
+    //res.status(200).json(ejemplo)    
     await saoService.companiesSinc(io,res,userData,async function(err,companyList){
         if(err){
             next(new AppError(err,404))
@@ -51,7 +61,11 @@ exports.companies = (io) => wrapAsync(async (req,res,next)=>{
 })
 
 exports.companiesInsertUpdateDB = wrapAsync(async (req,res,next)=>{
-    const {newCompanies, updatedCompanies} = req.body        
+    const {newCompanies, updatedCompanies} = req.body
+    console.log("companiesInsertUpdateBD")
+    console.log(newCompanies)
+    console.log(updatedCompanies)        
+    console.log("-----------------------")
     if((newCompanies && newCompanies.length > 0) || (updatedCompanies && updatedCompanies.length > 0)){
         await userManagerModel.insertUpdateManyUsers(newCompanies,updatedCompanies,async function(err,resultData){
             if(err){
@@ -66,7 +80,9 @@ exports.companiesInsertUpdateDB = wrapAsync(async (req,res,next)=>{
 })
 
 exports.teachers = (io) => wrapAsync(async (req,res,next)=>{
-    const userData = req.decoded.userData        
+    //const userData = req.decoded.userData 
+    //TEMPORAL
+    const userData = req.body       
     await saoService.teachersSinc(io,res,userData,async function(err,teacherList){
         if(err){
             next(new AppError(err,404))
@@ -93,7 +109,9 @@ exports.teachersInsertUpdateDB = wrapAsync(async (req,res,next)=>{
 
 
 exports.students = (io) => wrapAsync(async (req,res,next)=>{
-    const userData = req.decoded.userData        
+    //const userData = req.decoded.userData - TEMPORAL
+    const userData = req.body     
+    console.log(userData)           
     await saoService.studentsSinc(io,res,userData,async function(err,studentList){
         if(err){
             next(new AppError(err,404))
@@ -120,27 +138,22 @@ exports.studentsInsertUpdateDB = wrapAsync(async (req,res,next)=>{
 
 
 exports.fct = (io) => wrapAsync(async (req,res,next)=>{
-    const userData = req.decoded.userData
-    //const {verTodasFCT = false} = req.params
-    await saoService.FCTSinc(io,res,userData,async function(err,studentList){
-        if(err){
-            next(new AppError(err,404))
-        }else{
-            res.status(200).json(studentList)            
-        }
-    },false)
-})
+     // Leer query "?todasFCT=true"
+    //const todasFCT = req.query.todasFCT === "true";
 
-exports.fctAll = (io) => wrapAsync(async (req,res,next)=>{
-    const userData = req.decoded.userData
+    //console.log("TODAS FCTs en Controller: ", todasFCT)
+    //const userData = req.decoded.userData
+    //TEMPORAL
+    const userData = req.body
     //const {verTodasFCT = false} = req.params
-    await saoService.FCTSinc(io,res,userData,async function(err,studentList){
+    await saoService.FCTSinc(io,res,userData,async function(err,fctList){
         if(err){
             next(new AppError(err,404))
         }else{
-            res.status(200).json(studentList)            
+            console.log(fctList)
+            res.status(200).json(fctList)            
         }
-    },true)
+    })
 })
 
 

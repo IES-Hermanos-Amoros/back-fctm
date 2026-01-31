@@ -6,6 +6,7 @@ const puppeteer = require("puppeteer")
 const {setTimeout} = require("node:timers/promises")
 const TIEMPO_ESPERA = 5000
 const urlBase = process.env.SAO_URL_BASE
+const cursoSAO = process.env.SAO_CURSO
 const cheerio = require("cheerio")
 const userManagerModel = require("../models/userManager.model")
 const fctManagerModel = require("../models/fctManager.model")
@@ -395,6 +396,9 @@ getSAOFCTLinks = async(page, todas=false) => {
     const content = await page.content();
     const $ = cheerio.load(content);
 
+
+    console.log("TODAS LAS FCTs: ", todas)
+
     // Si el parámetro todas es true, hacer clic en el botón "Todas"
     if (todas) {
         try {            
@@ -454,10 +458,13 @@ getSAOFCTLinks = async(page, todas=false) => {
     for (let numPag = 1; numPag <= maxPage; numPag++) {
         try {
             // Simula la llamada AJAX para cargar la página correspondiente
-            await page.evaluate((pagina) => {
-                const url = `/inc/ajax/fcts/rellenar_fct.php?curso=2024-2025&periodo=-1&pag=${pagina}`;
-                muestraAjaxDiv(url, 'contenedorFCT');
-            }, numPag);
+            if(todas){ //En el caso que tengamos que paginar
+                await page.evaluate((pagina, cursoSAOInsideBrowser) => {
+                    console.log("Curso SAO: ", cursoSAOInsideBrowser)
+                    const url = `/inc/ajax/fcts/rellenar_fct.php?curso=${cursoSAOInsideBrowser}&periodo=-1&pag=${pagina}`;
+                    muestraAjaxDiv(url, 'contenedorFCT');
+                }, numPag, cursoSAO);
+            }
     
             // Espera a que el DOM se actualice con la nueva página
             await page.waitForFunction((pagina) => {
@@ -489,6 +496,8 @@ getSAOFCTLinks = async(page, todas=false) => {
             console.log("ERROR en la página " + numPag + ": " + error);
         }
     }
+
+    console.log(links)
 
     return links
 }
@@ -887,7 +896,7 @@ exports.studentsSinc = async(io,res,userData,result) => {
 }
 
 
-exports.FCTSinc = async(io,res,userData,result,todasFCT=false) => {
+exports.FCTSinc = async(io,res,userData,result) => {
     const respLogin = await loginSAO(userData) 
 
     if(respLogin.ok) {          
@@ -895,7 +904,7 @@ exports.FCTSinc = async(io,res,userData,result,todasFCT=false) => {
 
         //INI TEMPORAL
         const page = respLogin.page
-        const fctLinks = await getSAOFCTLinks(page,todasFCT)
+        const fctLinks = await getSAOFCTLinks(page,userData.todasFCTs)
         //result(null,fctLinks)
         //FIN TEMPORAL
 
@@ -974,7 +983,10 @@ exports.FCTSinc = async(io,res,userData,result,todasFCT=false) => {
 
         io.emit('progress-update', { progress:100, message:"Proceso completado." });
         desconectarSockets(io)       
-        result(null,FCTInfo)
+        
+        const FCTInfoPopulate = await populateFCTInfo(FCTInfo);
+        result(null, FCTInfoPopulate);
+        //result(null,FCTInfo)
 
 
     } else {
@@ -984,3 +996,71 @@ exports.FCTSinc = async(io,res,userData,result,todasFCT=false) => {
     }  
 }
 
+
+// =======================================================
+//  🌟 FUNCIÓN AUXILIAR: POPULATE FALSO PARA FCTInfo
+// =======================================================
+const populateFCTInfo = async (FCTInfo) => {
+    try {
+        if (!FCTInfo) return FCTInfo;
+
+        // Unir todas las FCT (new y updated)
+        const allFCTs = [
+            ...FCTInfo.newFCT,
+            ...FCTInfo.updatedFCT
+        ];
+
+        if (allFCTs.length === 0) return FCTInfo;
+
+        // Obtener todos los SAO_id necesarios
+        const companyIds = allFCTs.map(f => f.SAO_company_id);
+        const teacherIds = allFCTs.map(f => f.SAO_teacher_id);
+        const studentIds = allFCTs.map(f => f.SAO_student_id);
+
+        const allIds = [...new Set([
+            ...companyIds,
+            ...teacherIds,
+            ...studentIds
+        ])];
+
+        // Cargar usuarios de una sola vez
+        const users = await userManagerModel.find({
+            SAO_id: { $in: allIds }
+        }).lean();
+
+        const mapUsers = {};
+        users.forEach(u => mapUsers[u.SAO_id] = u);
+
+        // Función interna para mapear un FCT individual
+        const mapOne = (f) => ({
+            ...f,
+
+            // Empresa
+            SAO_company_id_FCTM: mapUsers[f.SAO_company_id]?._id || null,
+            SAO_company_name: mapUsers[f.SAO_company_id]?.SAO_name || "Desconocida",
+            SAO_company_email: mapUsers[f.SAO_company_id]?.SAO_email || "",
+            SAO_company_phone: mapUsers[f.SAO_company_id]?.SAO_phone || "",
+
+            // Alumno
+            SAO_student_id_FCTM: mapUsers[f.SAO_student_id]?._id || null,
+            SAO_student_name: mapUsers[f.SAO_student_id]?.SAO_name || "Desconocido",
+            SAO_student_email: mapUsers[f.SAO_student_id]?.SAO_email || "",
+            SAO_student_phone: mapUsers[f.SAO_student_id]?.SAO_phone || "",
+
+            // Profesor
+            SAO_teacher_id_FCTM: mapUsers[f.SAO_teacher_id]?._id || null,
+            SAO_teacher_name: mapUsers[f.SAO_teacher_id]?.SAO_name || "Desconocido",
+            SAO_teacher_email: mapUsers[f.SAO_teacher_id]?.SAO_email || "",
+        });
+
+        // Crear nuevo objeto con populate
+        return {
+            newFCT: FCTInfo.newFCT.map(mapOne),
+            updatedFCT: FCTInfo.updatedFCT.map(mapOne)
+        };
+
+    } catch (error) {
+        console.error("Error en populateFCTInfo:", error);
+        return FCTInfo;
+    }
+};
