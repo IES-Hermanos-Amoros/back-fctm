@@ -14,7 +14,11 @@ const find = async () => {
 
 const findByFilter = async (filter) => {
     try {
-        return await DummyModel.find(filter);
+        return await DummyModel.find(filter)
+        .populate({
+            path: "FCTM_documents",
+            select: "_id FCTM_document_name FCTM_document_url FCTM_document_description FCTM_document_type"
+            })
     } catch (err) {
         throw err;
     }
