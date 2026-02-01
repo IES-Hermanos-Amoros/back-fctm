@@ -41,6 +41,12 @@ const dummySchema = new mongoose.Schema({
         // enum: ["TEXTO", "NUMERO", "BOOLEANO", "OTRO"]
     },
 
+    FCTM_documents: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DocumentManager", // Relación con los documentos
+        default: []
+    }],
+
     // Fechas de control
     FCTM_inserted_date: {
         type: Date,
