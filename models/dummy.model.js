@@ -5,7 +5,6 @@ const dummySchema = new mongoose.Schema({
     // Clave principal (relacionable con UserManager si quieres)
     SAO_id: {
         type: String,
-        required: true,
         index: true
     },
 
