@@ -51,9 +51,12 @@ exports.getDummiesBySAOId = async (req, res) => {
 
 exports.createDummy = async (req, res) => {
   try {
+    console.log("DUMMY CREATE")
+    console.log(req.body)
     const newDummy = await dummyService.insertOne(req.body);
     res.status(201).json(newDummy);
   } catch (error) {
+    console.log(error)
     res.status(500).json({ error: 'Error al crear el dummy' });
   }
 };
@@ -87,12 +90,15 @@ exports.editDummyById = async (req, res) => {
 
 exports.deleteDummyById = async (req, res) => {
   try {
+    console.log("ELIMINAR DUMMY")
     const deletedDummy = await dummyService.deleteById(req.params.id);
     if (!deletedDummy) {
       return res.status(404).json({ error: 'Dummy no encontrado' });
     }
+    console.log(deletedDummy)
     res.status(200).json({ message: 'Dummy eliminado correctamente' });
   } catch (error) {
+    console.log(error)
     if (error.kind === 'ObjectId') {
       return res.status(400).json({ error: 'Formato de ID inválido' });
     }
