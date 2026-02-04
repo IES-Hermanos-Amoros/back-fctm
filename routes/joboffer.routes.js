@@ -1,4 +1,4 @@
-const jobOfferController = require("../controllers/joboffer.controller")
+const jobOfferController = require("../controllers/jobOffer.controller")
 const express = require("express")
 const router = express.Router()
 
