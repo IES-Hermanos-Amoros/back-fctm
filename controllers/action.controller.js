@@ -23,7 +23,7 @@ exports.getActionById = async (req,res) => {
 
 //Crear una nueva acción
 exports.newAction = async (req,res) => {
-    const actionCreado = await ActionService.create(req.body)
+    const actionCreado = await ActionService.create(req.body,req.files = {})
     if(actionCreado){
         res.status(200).json(actionCreado)
     } else {
