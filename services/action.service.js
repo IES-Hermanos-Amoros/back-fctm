@@ -1,4 +1,7 @@
 const actionModel = require("../models/actionManager.model")
+const userModel = require("../models/userManager.model")
+const { insertManyDocuments } = require("./document.service")
+
 
 //Obtener todas las acciones
 exports.getAll = () => actionModel.find()
@@ -7,8 +10,35 @@ exports.getAll = () => actionModel.find()
 exports.getById = async(id) => actionModel.findById(id)
 
 //Crear una nueva accion
-exports.create = async(datos) => {
-    const newAction = new actionModel(datos)
+exports.create = async({
+    FCTM_action_title,
+    FCTM_action_type,
+    FCTM_action_datetime,
+    FCTM_created_by,
+    user_Id,
+    files = []
+    }) => {
+    let filesID
+
+    if(files && files.length > 0){
+        filesID = await insertManyDocuments(files, FCTM_created_by)
+    }
+
+    const newAction = new actionModel({
+        FCTM_action_title,
+        FCTM_action_type,
+        FCTM_action_datetime,
+        FCTM_created_by,
+        FCTM_documents: filesID,
+    })
+    
+    if(user_Id){
+        await userModel.updateOne(
+            { _id: user_Id},
+            { $push: {FCTM_actions: newAction._id}}
+        )
+    }
+
     return await newAction.save()
 }
 
