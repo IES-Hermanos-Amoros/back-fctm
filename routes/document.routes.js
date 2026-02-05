@@ -24,5 +24,8 @@ router.patch("/:id",documentController.editDocumentById)
 //DELETE - Borrar un Documento
 router.delete("/:id",documentController.deleteDocumentById)
 
+//UPLOAD - Subir archivos
+router.post("/",upload.array("files",10),documentController.uploadDocuments)
+
 
 module.exports = router
