@@ -1,12 +1,17 @@
 //IMPORTS/REQUIRE
 //PROCESS.ENV (npm i dotenv)
 require("dotenv").config()
+
 const session = require("express-session") //npm i express-session
 const methodOverride = require("method-override") //npm i method-override
 const express = require("express") //npm i express
 const app = express()
 const path = require("path") //npm i path
 const port = process.env.PORT || process.env.PUERTO
+
+
+const { startHTTP, startHTTPS } = require("./serverLauncher");
+const usingHTTPS = process.env.USE_HTTPS || "false"
 
 const mongodbConfig = require("./utils/mongodb.config")
 const saoRoutes = require("./routes/sao.routes")
@@ -112,24 +117,42 @@ app.use((req,res)=>{
 //Gestión de todos los errores (Síncronos y Asíncronos del API)
 app.use(errorHandlerMW.errorHandler)
 
-//HTTP
-server.listen(port, async()=>{
-    console.log(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/sao`)
-    logger.access.info(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/sao`)
+
+
+//Levantar Servidor HTTP o HTTPS según variable de entorno y validez/caducidad de los certificados digitales
+const startServer = async () => {
     try {
-        //Una vez levantado el servidor, intentamos conectar con MongoDB
-        await mongodbConfig.conectarMongoDB()
-        .then(()=>{
-            console.log("Conectado con MongoDB Atlas!!!")
-        })
-        .catch((err)=>{
-            //Si no conectamos con MongoDB, debemos tumbar el server
-            console.log(`Error al conectar. Desc: ${err}`)
+        if (usingHTTPS === "true") {
+            startHTTPS(
+                app,
+                port,
+                "certs/localhost-2daw-2526.key",
+                "certs/localhost-2daw-2526.crt"
+            );
+        } else {
+            startHTTP(app, port);
+        }
+
+        try {        
+            await mongodbConfig.conectarMongoDB()
+            .then(()=>{
+                console.log("Conectado con MongoDB Atlas!!!")
+            })
+            .catch((err)=>{            
+                console.log(`Error al conectar. Desc: ${err}`)
+                process.exit(0)
+            })
+        } catch (error) {        
+            console.log(`Error en el server. Desc: ${error}`)
             process.exit(0)
-        })
+        }
+
+
     } catch (error) {
-        //Si no conectamos con MongoDB, debemos tumbar el server
-        console.log(`Error en el server. Desc: ${error}`)
-        process.exit(0)
+        console.error("Error al iniciar el servidor o BD:", error);
+        process.exit(1);
     }
-})
+};
+
+//Aranque HTTP o HTTPS
+startServer();
