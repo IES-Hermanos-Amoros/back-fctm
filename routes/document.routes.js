@@ -1,5 +1,6 @@
 const documentController = require("../controllers/document.controller")                                                 
 const express = require("express")
+const upload = require("../middlewares/upload.middleware")
 const router = express.Router()
 
 
@@ -25,7 +26,7 @@ router.patch("/:id",documentController.editDocumentById)
 router.delete("/:id",documentController.deleteDocumentById)
 
 //UPLOAD - Subir archivos
-router.post("/",upload.array("files",10),documentController.uploadDocuments)
+router.post("/upload",upload.array("files",10),documentController.uploadDocuments)
 
 
 module.exports = router
