@@ -1,5 +1,6 @@
 const documentModel = require('../models/documentManager.model')
 const userModel = require('../models/userManager.model')
+const mongoose = require('mongoose')
 
 //devolver documentos
 exports.getAll = () => documentModel.find()
@@ -21,40 +22,34 @@ exports.update = async (id, datos) =>
 exports.remove = async id => await documentModel.findByIdAndDelete(id)
 
 //insertar varios documentos
-exports.insertManyDocuments = async (files, userId = null) => {
+exports.insertManyDocuments = async (files, userId) => {
   try {
+    // validación inicial de entrada
     if (!files || files.length === 0) {
-      throw new Error('No se han recibido archivos para insertar.')
+      throw new Error('No hay archivos para insertar.')
     }
 
-    //construir los documentos a partir de req.files
+    const createdBy = mongoose.Types.ObjectId.isValid(userId)
+      ? new mongoose.Types.ObjectId(userId)
+      : undefined
+
+    //mapeo de docs a insertar
     const docsToInsert = files.map(file => ({
-      originalName: file.originalname,
-      fileName: file.filename,
-      mimeType: file.mimetype,
-      size: file.size,
-      url: `/uploads/${file.filename}`,
-      uploadedAt: new Date(),
-      user: userId || null,
+      FCTM_document_name: file.originalname,
+      FCTM_document_url: `/uploads/${file.filename}`,
+      FCTM_document_mimetype: file.mimetype,
+      FCTM_document_size: file.size,
+      FCTM_document_created_by: createdBy,
+      FCTM_document_created_date: new Date(),
     }))
 
-    //insertar los documentos de una vez
-    const insertedDocs = await documentModel.insertMany(docsToInsert)
-
-    //si hay userId, actualizar lista de documentos
-    if (userId) {
-      const docIds = insertedDocs.map(doc => doc._id)
-
-      await userModel.updateOne(
-        { _id: userId },
-        { $push: { FCTM_documents: { $each: docIds } } }
-      )
-    }
-
-    //devolver los documentos
-    return insertedDocs
+    const result = await documentModel.insertMany(docsToInsert)
+    return result
   } catch (error) {
-    console.error('Error insertando varios documentos:', error)
-    throw error
+    console.error(
+      'Error al insertar documentos:',
+      error.message
+    )
+    throw new Error(`Error en la carga de archivos: ${error.message}`)
   }
 }
