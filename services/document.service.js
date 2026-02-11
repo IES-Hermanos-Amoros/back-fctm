@@ -1,4 +1,5 @@
-const documentModel = require("../models/documentManager.model")
+const documentModel = require('../models/documentManager.model')
+const mongoose = require('mongoose')
 const ActionManager = require("../models/actionManager.model"); // Importante para el populate
 const userManager = require("../models/userManager.model");    // Importante para la búsqueda de usuarios
 

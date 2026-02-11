@@ -1,4 +1,5 @@
 const actionController = require("../controllers/action.controller")
+const upload = require("../middlewares/upload.middleware")
 const express = require("express")
 const router = express.Router()
 
@@ -6,7 +7,7 @@ const router = express.Router()
 router.get("/",actionController.getAllActions)
 
 //crear una accion
-router.post("/",actionController.newAction)
+router.post("/", upload.array("files",10), actionController.newAction)
 
 //mostrar accion por id
 router.get("/:id",actionController.getActionById)

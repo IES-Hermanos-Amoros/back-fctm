@@ -36,9 +36,9 @@ const dummySchema = new mongoose.Schema({
 
     FCTM_dummy_type: {
         type: String,
-        default: null
+        default: "OTRO",
         // Si más adelante quieres controlar tipos:
-        // enum: ["TEXTO", "NUMERO", "BOOLEANO", "OTRO"]
+        enum: ["TEXTO", "NUMERO", "BOOLEANO", "OTRO"]
     },
 
     FCTM_documents: [{
