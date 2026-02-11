@@ -1,4 +1,4 @@
-const { wrapAsync } = require('../utils/')
+const { wrapAsync } = require('../utils/functions')
 const AppError = require("../utils/AppError")
 const fctService = require("../services/fct.service")   
 

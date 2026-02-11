@@ -20,6 +20,9 @@ const adminRoutes = require("./routes/admin.routes");
 const teacherRoutes = require("./routes/teacher.routes");
 const studentRoutes = require("./routes/student.routes");
 const companyRoutes = require("./routes/company.routes");
+const reviewRoutes = require("./routes/review.routes");
+const fctRoutes = require("./routes/fct.routes");
+const actionRoutes = require("./routes/action.routes") //ERROR
 const dummyRoutes = require("./routes/dummy.routes");
 
 const morganMW = require("./middlewares/morgan.mw");
@@ -71,6 +74,9 @@ app.use(`/api/${process.env.API_VERSION}/administrators`, adminRoutes);
 app.use(`/api/${process.env.API_VERSION}/teachers`, teacherRoutes);
 app.use(`/api/${process.env.API_VERSION}/students`, studentRoutes);
 app.use(`/api/${process.env.API_VERSION}/companies`, companyRoutes);
+app.use(`/api/${process.env.API_VERSION}/reviews`, reviewRoutes);
+app.use(`/api/${process.env.API_VERSION}/fct`, fctRoutes);
+app.use(`/api/${process.env.API_VERSION}/actions`, fctRoutes);
 app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
 
 
