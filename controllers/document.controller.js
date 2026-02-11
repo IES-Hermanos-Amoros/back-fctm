@@ -50,10 +50,11 @@ exports.deleteDocumentById = async (req,res) => {
 
 exports.uploadDocuments = async (req, res) => {
     try {
-        const userId = req.body.userId
-        console.log("USER ID:", userId, typeof userId)
-        const insertedDocuments = await DocumentService.insertManyDocuments(req.files, userId)
-        res.status(200).json(insertedDocuments)
+        const docs= await DocumentService.insertManyDocuments(
+            req.files,
+            req.body.userid
+        )
+        res.status(200).json(docs)
     } catch (error) {
         res.status(500).json(error)
     }
