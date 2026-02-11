@@ -3,6 +3,8 @@ const http = require("http");
 const https = require("https");
 const crypto = require("crypto");
 
+let serverType = "http"
+
 /**
  * Levanta un servidor HTTP
  * @param {Express.Application} app 
@@ -11,9 +13,9 @@ const crypto = require("crypto");
  */
 function startHTTP(app, port) {
   const server = http.createServer(app);
-  server.listen(port, () => {
+  /*server.listen(port, () => {
     console.log(`Servidor HTTP levantado en http://localhost:${port}`);
-  });
+  });*/
   return server;
 }
 
@@ -60,9 +62,10 @@ function startHTTPS(app, port, keyPath, certPath) {
     const key = fs.readFileSync(keyPath);
     const cert = fs.readFileSync(certPath);
     const server = https.createServer({ key, cert }, app);
-    server.listen(port, () => {
+    /*server.listen(port, () => {
       console.log(`Servidor HTTPS levantado en https://localhost:${port}`);
-    });
+    });*/
+    serverType = "https"
     return server;
   } catch (err) {
     console.error(`Error levantando HTTPS: ${err.message}`);
@@ -71,4 +74,4 @@ function startHTTPS(app, port, keyPath, certPath) {
   }
 }
 
-module.exports = { startHTTP, startHTTPS };
+module.exports = { startHTTP, startHTTPS, serverType };

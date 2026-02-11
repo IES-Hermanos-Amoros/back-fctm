@@ -1,5 +1,4 @@
 require("dotenv").config();
-let io = null
 const session = require("express-session");
 const methodOverride = require("method-override");
 const express = require("express");
@@ -7,7 +6,8 @@ const app = express();
 const path = require("path");
 const port = process.env.PORT || process.env.PUERTO;
 
-const { startHTTP, startHTTPS } = require("./serverLauncher");
+const socketIo = require("socket.io");
+const { startHTTP, startHTTPS, serverType } = require("./serverLauncher");
 const usingHTTPS = process.env.USE_HTTPS || 0;
 const keySSL = process.env.HTTPS_KEY_SSL || "certs/localhost-2daw-2526.key";
 const crtSSL = process.env.HTTPS_CRT_SSL || "certs/localhost-2daw-2526.crt";
@@ -28,9 +28,26 @@ const errorHandlerMW = require("./middlewares/errorHandler.mw");
 const AppError = require("./utils/AppError");
 const cors = require("cors");
 const { checkOrigin, whiteList } = require("./utils/cors.config");
-const { insertOne } = require("./models/actionManager.model");
+
+//let io; // Socket.IO
 
 // =================== CONFIG EXPRESS ===================
+const server =
+  usingHTTPS == 1
+    ? startHTTPS(app, port, keySSL, crtSSL)
+    : startHTTP(app, port);
+
+// Inicializar Socket.IO sobre el mismo server
+//const socketIo = require("socket.io");
+const io = socketIo(server, {
+  cors: { 
+      origin: whiteList, 
+      methods: ['GET', 'POST'],
+      credentials: true 
+    }
+});
+
+
 app.use(methodOverride("_method"));
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -38,24 +55,18 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-const corsOptions = { origin: checkOrigin, credentials: true };
-app.use(cors(corsOptions));
+app.use(cors({ origin: checkOrigin, credentials: true }));
 app.use(morganMW.usingMorgan());
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      secure: false,
-      maxAge: 3600000,
-      sameSite: "none",
-      httpOnly: false,
-    },
+    cookie: { secure: false, maxAge: 3600000, sameSite: "none", httpOnly: false },
   })
 );
 
-// =================== RUTAS ===================
+// =================== RUTAS GENERALES ===================
 app.use(`/api/${process.env.API_VERSION}/sao`, saoRoutes(io));
 app.use(`/api/${process.env.API_VERSION}/joboffers`, jobOfferRoutes);
 app.use(`/api/${process.env.API_VERSION}/documents`, documentRoutes);
@@ -65,55 +76,76 @@ app.use(`/api/${process.env.API_VERSION}/students`, studentRoutes);
 app.use(`/api/${process.env.API_VERSION}/companies`, companyRoutes);
 app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
 
-// Evitar que Socket.IO caiga en 404
-app.use((req, res, next) => {
-  if (req.originalUrl.startsWith("/socket.io")) return next();
-  logger.error.fatal("Ruta no existente " + req.originalUrl);
-  throw new AppError("Ruta no existente", 404);
-});
-
-app.use(errorHandlerMW.errorHandler);
-
 // =================== ARRANQUE DEL SERVIDOR ===================
-const startServer = async () => {
+const startServerOLD = async () => {
   try {
-    // Levanta HTTP o HTTPS y devuelve el server
+    // Levantar HTTP/HTTPS
     const server =
       usingHTTPS == 1
         ? startHTTPS(app, port, keySSL, crtSSL)
         : startHTTP(app, port);
 
-    // Socket.IO sobre el mismo server
-    const { Server } = require("socket.io");
-    io = new Server(server, {
-      cors: {
-        origin: whiteList,
-        credentials: true,
-      },
+   
+
+    // Inicializar Socket.IO sobre el mismo server
+    //const socketIo = require("socket.io");
+    io = socketIo(server, {
+      cors: { 
+          origin: whiteList, 
+          methods: ['GET', 'POST'],
+          credentials: true 
+        }
     });
 
-    io.on("connection", (socket) => {
-      console.log("🟢 Cliente conectado al WebSocket:", socket.id);
-      socket.on("disconnect", () => {
-        console.log("🔴 Cliente desconectado:", socket.id);
-      });
-    });
+    /*io.on("connection", (socket) => {
+      console.log("🟢 Cliente conectado:", socket.id);
+      socket.on("disconnect", () => console.log("🔴 Cliente desconectado:", socket.id));
+    });*/
 
+    // Registrar rutas que dependen de io **ya con io inicializado**
     //app.use(`/api/${process.env.API_VERSION}/sao`, saoRoutes(io));
 
+   //Arrancar server
+    server.listen(port, () => {
+      console.log(`Servidor ${serverType} levantado en ${serverType}://localhost:${port}`);
+    });
 
     // Conexión a MongoDB
-    await mongodbConfig
-      .conectarMongoDB()
-      .then(() => console.log("Conectado con MongoDB Atlas!!!"))
-      .catch((err) => {
-        console.error(`Error al conectar con MongoDB: ${err}`);
-        process.exit(0);
-      });
+    await mongodbConfig.conectarMongoDB();
+    console.log("Conectado con MongoDB Atlas!!!");
   } catch (error) {
     console.error("Error al iniciar el servidor o BD:", error);
     process.exit(1);
   }
 };
 
-startServer();
+
+
+// =================== CATCH-ALL 404 ===================
+// Solo al final, después de todas las rutas
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/socket.io")) return next();
+  logger.error.fatal("Ruta no existente " + req.originalUrl);
+  throw new AppError("Ruta no existente", 404);
+});
+
+// Middleware de error final
+app.use(errorHandlerMW.errorHandler);
+
+
+
+// Arrancar el servidor
+//startServer();
+
+server.listen(port, async() => {
+      console.log(`Servidor ${serverType} levantado en ${serverType}://localhost:${port}`);
+      try {
+        // Conexión a MongoDB
+          await mongodbConfig.conectarMongoDB();
+          console.log("Conectado con MongoDB Atlas!!!");
+      } catch (error) {
+          console.error("Error al iniciar el servidor o BD:", error);
+          process.exit(1);
+      }
+
+})
