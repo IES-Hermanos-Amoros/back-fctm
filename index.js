@@ -7,7 +7,7 @@ const path = require("path");
 const port = process.env.PORT || process.env.PUERTO;
 
 const socketIo = require("socket.io");
-const { startHTTP, startHTTPS, serverType } = require("./serverLauncher");
+const { startHTTP, startHTTPS, serverState } = require("./serverLauncher");
 const usingHTTPS = process.env.USE_HTTPS || 0;
 const keySSL = process.env.HTTPS_KEY_SSL || "certs/localhost-2daw-2526.key";
 const crtSSL = process.env.HTTPS_CRT_SSL || "certs/localhost-2daw-2526.crt";
@@ -29,8 +29,6 @@ const AppError = require("./utils/AppError");
 const cors = require("cors");
 const { checkOrigin, whiteList } = require("./utils/cors.config");
 
-//let io; // Socket.IO
-
 // =================== CONFIG EXPRESS ===================
 const server =
   usingHTTPS == 1
@@ -38,7 +36,6 @@ const server =
     : startHTTP(app, port);
 
 // Inicializar Socket.IO sobre el mismo server
-//const socketIo = require("socket.io");
 const io = socketIo(server, {
   cors: { 
       origin: whiteList, 
@@ -76,50 +73,6 @@ app.use(`/api/${process.env.API_VERSION}/students`, studentRoutes);
 app.use(`/api/${process.env.API_VERSION}/companies`, companyRoutes);
 app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
 
-// =================== ARRANQUE DEL SERVIDOR ===================
-const startServerOLD = async () => {
-  try {
-    // Levantar HTTP/HTTPS
-    const server =
-      usingHTTPS == 1
-        ? startHTTPS(app, port, keySSL, crtSSL)
-        : startHTTP(app, port);
-
-   
-
-    // Inicializar Socket.IO sobre el mismo server
-    //const socketIo = require("socket.io");
-    io = socketIo(server, {
-      cors: { 
-          origin: whiteList, 
-          methods: ['GET', 'POST'],
-          credentials: true 
-        }
-    });
-
-    /*io.on("connection", (socket) => {
-      console.log("🟢 Cliente conectado:", socket.id);
-      socket.on("disconnect", () => console.log("🔴 Cliente desconectado:", socket.id));
-    });*/
-
-    // Registrar rutas que dependen de io **ya con io inicializado**
-    //app.use(`/api/${process.env.API_VERSION}/sao`, saoRoutes(io));
-
-   //Arrancar server
-    server.listen(port, () => {
-      console.log(`Servidor ${serverType} levantado en ${serverType}://localhost:${port}`);
-    });
-
-    // Conexión a MongoDB
-    await mongodbConfig.conectarMongoDB();
-    console.log("Conectado con MongoDB Atlas!!!");
-  } catch (error) {
-    console.error("Error al iniciar el servidor o BD:", error);
-    process.exit(1);
-  }
-};
-
-
 
 // =================== CATCH-ALL 404 ===================
 // Solo al final, después de todas las rutas
@@ -133,12 +86,9 @@ app.use((req, res, next) => {
 app.use(errorHandlerMW.errorHandler);
 
 
-
 // Arrancar el servidor
-//startServer();
-
 server.listen(port, async() => {
-      console.log(`Servidor ${serverType} levantado en ${serverType}://localhost:${port}`);
+      console.log(`Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}`);
       try {
         // Conexión a MongoDB
           await mongodbConfig.conectarMongoDB();
@@ -147,5 +97,4 @@ server.listen(port, async() => {
           console.error("Error al iniciar el servidor o BD:", error);
           process.exit(1);
       }
-
 })
