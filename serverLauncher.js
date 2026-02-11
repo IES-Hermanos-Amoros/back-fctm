@@ -4,20 +4,23 @@ const https = require("https");
 const crypto = require("crypto");
 
 /**
- * Levanta un servidor HTTP y LO DEVUELVE
+ * Levanta un servidor HTTP
+ * @param {Express.Application} app 
+ * @param {number} port 
+ * @returns {http.Server}
  */
 function startHTTP(app, port) {
   const server = http.createServer(app);
-
   server.listen(port, () => {
     console.log(`Servidor HTTP levantado en http://localhost:${port}`);
   });
-
-  return server; // ✅ MUY IMPORTANTE
+  return server;
 }
 
 /**
  * Comprueba si un certificado X.509 ha expirado
+ * @param {string} certPath Ruta al certificado .crt
+ * @returns {boolean} true si válido, false si caducado o inválido
  */
 function isCertificateValid(certPath) {
   try {
@@ -29,9 +32,7 @@ function isCertificateValid(certPath) {
     const validTo = new Date(cert.validTo);
 
     if (now < validFrom || now > validTo) {
-      console.warn(
-        `Certificado expirado o aún no válido: ${validFrom} - ${validTo}`
-      );
+      console.warn(`Certificado expirado o aún no válido: ${validFrom} - ${validTo}`);
       return false;
     }
     return true;
@@ -42,29 +43,31 @@ function isCertificateValid(certPath) {
 }
 
 /**
- * Levanta HTTPS si el certificado es válido, si no → fallback a HTTP
+ * Levanta un servidor HTTPS si el certificado es válido
+ * @param {Express.Application} app 
+ * @param {number} port 
+ * @param {string} keyPath 
+ * @param {string} certPath 
+ * @returns {https.Server|http.Server}
  */
 function startHTTPS(app, port, keyPath, certPath) {
   if (!isCertificateValid(certPath)) {
     console.warn("HTTPS no se puede levantar. Usando HTTP como fallback.");
-    return startHTTP(app, port); // ✅ Devuelve el servidor HTTP
+    return startHTTP(app, port);
   }
 
   try {
     const key = fs.readFileSync(keyPath);
     const cert = fs.readFileSync(certPath);
-
     const server = https.createServer({ key, cert }, app);
-
     server.listen(port, () => {
       console.log(`Servidor HTTPS levantado en https://localhost:${port}`);
     });
-
-    return server; // ✅ MUY IMPORTANTE
+    return server;
   } catch (err) {
     console.error(`Error levantando HTTPS: ${err.message}`);
     console.warn("Usando HTTP como fallback.");
-    return startHTTP(app, port); // ✅ Devuelve el servidor HTTP
+    return startHTTP(app, port);
   }
 }
 
