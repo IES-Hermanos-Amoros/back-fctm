@@ -70,34 +70,40 @@ exports.update = async (id, datos) =>
 exports.remove = async id => await documentModel.findByIdAndDelete(id)
 
 //insertar varios documentos
-exports.insertManyDocuments = async (files, userId) => {
+exports.insertManyDocuments = async (files, userId = null) => {
   try {
-    // validación inicial de entrada
     if (!files || files.length === 0) {
-      throw new Error('No hay archivos para insertar.')
+      throw new Error('No se han recibido archivos para insertar.')
     }
 
-    const createdBy = mongoose.Types.ObjectId.isValid(userId)
-      ? new mongoose.Types.ObjectId(userId)
-      : undefined
-
-    //mapeo de docs a insertar
+    //construir los documentos a partir de req.files
     const docsToInsert = files.map(file => ({
-      FCTM_document_name: file.originalname,
-      FCTM_document_url: `/uploads/${file.filename}`,
-      FCTM_document_mimetype: file.mimetype,
-      FCTM_document_size: file.size,
-      FCTM_document_created_by: createdBy,
-      FCTM_document_created_date: new Date(),
+      originalName: file.originalname,
+      fileName: file.filename,
+      mimeType: file.mimetype,
+      size: file.size,
+      url: `/uploads/${file.filename}`,
+      uploadedAt: new Date(),
+      user: userId || null,
     }))
 
-    const result = await documentModel.insertMany(docsToInsert)
-    return result
+    //insertar los documentos de una vez
+    const insertedDocs = await documentModel.insertMany(docsToInsert)
+
+    //si hay userId, actualizar lista de documentos
+    if (userId) {
+      const docIds = insertedDocs.map(doc => doc._id)
+
+      await userModel.updateOne(
+        { _id: userId },
+        { $push: { FCTM_documents: { $each: docIds } } }
+      )
+    }
+
+    //devolver los documentos
+    return insertedDocs
   } catch (error) {
-    console.error(
-      'Error al insertar documentos:',
-      error.message
-    )
-    throw new Error(`Error en la carga de archivos: ${error.message}`)
+    console.error('Error insertando varios documentos:', error)
+    throw error
   }
 }
