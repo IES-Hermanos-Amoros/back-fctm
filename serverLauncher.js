@@ -22,7 +22,8 @@ function startHTTP(app, port) {
 function isCertificateValid(certPath) {
   try {
     const certPEM = fs.readFileSync(certPath, "utf-8");
-    const cert = crypto.X509Certificate.fromPEM(certPEM);
+    //const cert = crypto.X509Certificate.fromPEM(certPEM);
+    const cert = new crypto.X509Certificate(certPEM);
 
     const now = new Date();
     const validFrom = new Date(cert.validFrom);
@@ -47,6 +48,9 @@ function isCertificateValid(certPath) {
  * @param {string} certPath 
  */
 function startHTTPS(app, port, keyPath, certPath) {
+
+
+
   if (!isCertificateValid(certPath)) {
     console.warn("HTTPS no se puede levantar. Usando HTTP como fallback.");
     startHTTP(app, port);

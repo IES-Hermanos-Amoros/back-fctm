@@ -11,7 +11,9 @@ const port = process.env.PORT || process.env.PUERTO
 
 
 const { startHTTP, startHTTPS } = require("./serverLauncher");
-const usingHTTPS = process.env.USE_HTTPS || "false"
+const usingHTTPS = process.env.USE_HTTPS || 0
+const keySSL = process.env.HTTPS_KEY_SSL || "certs/localhost-2daw-2526.key"
+const crtSSL = process.env.HTTPS_CRT_SSL || "certs/localhost-2daw-2526.crt"
 
 const mongodbConfig = require("./utils/mongodb.config")
 const saoRoutes = require("./routes/sao.routes")
@@ -118,16 +120,16 @@ app.use((req,res)=>{
 app.use(errorHandlerMW.errorHandler)
 
 
-
+//console.log("Usando HTTPS", usingHTTPS)
 //Levantar Servidor HTTP o HTTPS según variable de entorno y validez/caducidad de los certificados digitales
 const startServer = async () => {
     try {
-        if (usingHTTPS === "true") {
+        if (usingHTTPS == 1) {
             startHTTPS(
                 app,
                 port,
-                "certs/localhost-2daw-2526.key",
-                "certs/localhost-2daw-2526.crt"
+                keySSL,
+                crtSSL
             );
         } else {
             startHTTP(app, port);
