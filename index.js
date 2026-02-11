@@ -1,133 +1,100 @@
-//IMPORTS/REQUIRE
-//PROCESS.ENV (npm i dotenv)
-require("dotenv").config()
-const session = require("express-session") //npm i express-session
-const methodOverride = require("method-override") //npm i method-override
-const express = require("express") //npm i express
-const app = express()
-const path = require("path") //npm i path
-const port = process.env.PORT || process.env.PUERTO
+require("dotenv").config();
+const session = require("express-session");
+const methodOverride = require("method-override");
+const express = require("express");
+const app = express();
+const path = require("path");
+const port = process.env.PORT || process.env.PUERTO;
 
-const mongodbConfig = require("./utils/mongodb.config")
-const saoRoutes = require("./routes/sao.routes")
-const jobOfferRoutes = require("./routes/joboffer.routes")
-const documentRoutes = require("./routes/document.routes")
-const adminRoutes = require("./routes/admin.routes")
-const teacherRoutes = require("./routes/teacher.routes")
-const studentRoutes = require("./routes/student.routes")
-const companyRoutes = require("./routes/company.routes")
+const socketIo = require("socket.io");
+const { startHTTP, startHTTPS, serverState } = require("./serverLauncher");
+const usingHTTPS = process.env.USE_HTTPS || 0;
+const keySSL = process.env.HTTPS_KEY_SSL || "certs/localhost-2daw-2526.key";
+const crtSSL = process.env.HTTPS_CRT_SSL || "certs/localhost-2daw-2526.crt";
 
+const mongodbConfig = require("./utils/mongodb.config");
+const saoRoutes = require("./routes/sao.routes");
+const jobOfferRoutes = require("./routes/joboffer.routes");
+const documentRoutes = require("./routes/document.routes");
+const adminRoutes = require("./routes/admin.routes");
+const teacherRoutes = require("./routes/teacher.routes");
+const studentRoutes = require("./routes/student.routes");
+const companyRoutes = require("./routes/company.routes");
+const dummyRoutes = require("./routes/dummy.routes");
 
+const morganMW = require("./middlewares/morgan.mw");
+const logger = require("./utils/logger");
+const errorHandlerMW = require("./middlewares/errorHandler.mw");
+const AppError = require("./utils/AppError");
+const cors = require("cors");
+const { checkOrigin, whiteList } = require("./utils/cors.config");
 
-const morganMW = require("./middlewares/morgan.mw")
-const logger = require("./utils/logger")
-const errorHandlerMW = require("./middlewares/errorHandler.mw")
-const AppError = require("./utils/AppError")
-const cors = require("cors")
-//INI WebSocket
-const http = require('http');
-const socketIo = require('socket.io');
-const server = http.createServer(app);
+// =================== CONFIG EXPRESS ===================
+const server =
+  usingHTTPS == 1
+    ? startHTTPS(app, port, keySSL, crtSSL)
+    : startHTTP(app, port);
+
+// Inicializar Socket.IO sobre el mismo server
 const io = socketIo(server, {
-    cors: {
-        origin: 'http://localhost:5173', // URL del frontend
-        methods: ['GET', 'POST'],
-        credentials: true, // Si usas cookies o autenticación basada en sesiones
-      }
-});
-//FIN WebSocket
-
-
-
-//CONFIGURACIONES
-app.use(methodOverride("_method"))
-app.set("views",path.join(__dirname,"views"))
-app.set("view engine","ejs") //npm i ejs
-app.use(express.static(path.join(__dirname,"public")))
-
-//app.use(express.urlencoded({extended:true})) //Para poder leer datos (request body) en métodos POST
-//app.use(express.json()) //Leer datos JSON en request body POST
-// Aumentar el tamaño máximo permitido en el cuerpo de la solicitud
-app.use(express.json({ limit: '10mb' }));  // Esto aumenta el límite a 10 MB
-app.use(express.urlencoded({ limit: '10mb', extended: true }));  // Para formularios con archivos (si es necesario)
-
-
-
-const whiteList = ["http://localhost:5500","http://127.0.0.1:5500","http://localhost:5173","http://127.0.0.1:5173","http://localhost:3015","http://127.0.0.1:3015"]
-const corsOptions = {
-    origin:(origin, callback) => {
-        console.log(origin)
-        //Permitimos conexiones externas (desde FrontEnd) y
-        //conexiones internas desde nuestro propio API (origin = undefined)
-        if(whiteList.includes(origin) || !origin){
-            callback(null,true)
-        }else{
-            callback(new AppError("No pasarás!",403))
-        }
-    },
-    credentials:true //Enviar la cookie SID
-}
-//app.use(cors()) //CORS ABIERTO AL MUNDO
-app.use(cors(corsOptions))
-
-
-
-app.use(morganMW.usingMorgan())
-
-app.use(session({
-    //name:"manolico",//"connect.sid", //default
-    secret:process.env.SESSION_SECRET,//Firmar el SID, para generar el código y que no sea manipulado
-    resave:false,//No se guardará en el store si no ha cambiado
-    saveUninitialized:false,//No se guardará en el store hasta que no se inicialice de alguna forma
-    cookie:{
-        secure:false,//la sesión se enviará sólo en HTTPS (si está a true)
-        maxAge:3600000, //1hora (tiempo expiración cookie SID)        
-        //TEMPORAL PARA EJS
-        sameSite:"none", //Permite envío de cookies en solicitudes entre diferentes dominios (CORS habilitado), pero requiere secure:true
-        httpOnly:false
-    }    
-}))
-
-
-//RUTAS
-
-app.use(`/api/${process.env.API_VERSION}/sao`,saoRoutes(io))
-app.use(`/api/${process.env.API_VERSION}/joboffers`,jobOfferRoutes)
-app.use(`/api/${process.env.API_VERSION}/documents`,documentRoutes)
-app.use(`/api/${process.env.API_VERSION}/administrators`,adminRoutes)
-app.use(`/api/${process.env.API_VERSION}/teachers`,teacherRoutes)
-app.use(`/api/${process.env.API_VERSION}/students`,studentRoutes)
-app.use(`/api/${process.env.API_VERSION}/companies`,companyRoutes)
-
-
-
-//Middleware propio para las rutas no existentes
-app.use((req,res)=>{
-    logger.error.fatal("Ruta no existente " + req.originalUrl)
-    throw new AppError("Ruta no existente", 404) //NOT FOUND
-})
-
-//Gestión de todos los errores (Síncronos y Asíncronos del API)
-app.use(errorHandlerMW.errorHandler)
-
-//HTTP
-server.listen(port, async()=>{
-    console.log(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/sao`)
-    logger.access.info(`${process.env.MENSAJE} http://localhost:${port}/api/${process.env.API_VERSION}/sao`)
-    try {
-        //Una vez levantado el servidor, intentamos conectar con MongoDB
-        await mongodbConfig.conectarMongoDB()
-        .then(()=>{
-            console.log("Conectado con MongoDB Atlas!!!")
-        })
-        .catch((err)=>{
-            //Si no conectamos con MongoDB, debemos tumbar el server
-            console.log(`Error al conectar. Desc: ${err}`)
-            process.exit(0)
-        })
-    } catch (error) {
-        //Si no conectamos con MongoDB, debemos tumbar el server
-        console.log(`Error en el server. Desc: ${error}`)
-        process.exit(0)
+  cors: { 
+      origin: whiteList, 
+      methods: ['GET', 'POST'],
+      credentials: true 
     }
+});
+
+
+app.use(methodOverride("_method"));
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+app.use(cors({ origin: checkOrigin, credentials: true }));
+app.use(morganMW.usingMorgan());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 3600000, sameSite: "none", httpOnly: false },
+  })
+);
+
+// =================== RUTAS GENERALES ===================
+app.use(`/api/${process.env.API_VERSION}/sao`, saoRoutes(io));
+app.use(`/api/${process.env.API_VERSION}/joboffers`, jobOfferRoutes);
+app.use(`/api/${process.env.API_VERSION}/documents`, documentRoutes);
+app.use(`/api/${process.env.API_VERSION}/administrators`, adminRoutes);
+app.use(`/api/${process.env.API_VERSION}/teachers`, teacherRoutes);
+app.use(`/api/${process.env.API_VERSION}/students`, studentRoutes);
+app.use(`/api/${process.env.API_VERSION}/companies`, companyRoutes);
+app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
+
+
+// =================== CATCH-ALL 404 ===================
+// Solo al final, después de todas las rutas
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/socket.io")) return next();
+  logger.error.fatal("Ruta no existente " + req.originalUrl);
+  throw new AppError("Ruta no existente", 404);
+});
+
+// Middleware de error final
+app.use(errorHandlerMW.errorHandler);
+
+
+// Arrancar el servidor
+server.listen(port, async() => {
+      console.log(`Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}`);
+      try {
+        // Conexión a MongoDB
+          await mongodbConfig.conectarMongoDB();
+          console.log("Conectado con MongoDB Atlas!!!");
+      } catch (error) {
+          console.error("Error al iniciar el servidor o BD:", error);
+          process.exit(1);
+      }
 })
