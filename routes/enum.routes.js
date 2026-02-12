@@ -7,3 +7,5 @@ router.get('/', enumController.getAll)
 
 //2º ruta - getEnumByName
 router.get('/:name', enumController.getEnumByName)
+
+module.exports = router
