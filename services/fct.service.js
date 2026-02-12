@@ -41,6 +41,8 @@ exports.updateFctmFields = async (id, data) => {
     }
 
     // Actualización segura
+    console.log("datos filtrados: " , filteredData, id)
+
     const updatedFct = await fctManager.findOneAndUpdate(
       { _id: id },
       { $set: filteredData },

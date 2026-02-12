@@ -14,6 +14,7 @@ exports.create = async({
     FCTM_action_title,
     FCTM_action_type,
     FCTM_action_datetime,
+    FCTM_action_notes,
     FCTM_created_by,
     user_Id},
     files = []
@@ -22,7 +23,7 @@ exports.create = async({
 
     let filesID
 
-    const datos = {
+    const datosDocumentos = {
         description: FCTM_action_title,
         type: "OTRO",
         createdBy: FCTM_created_by,
@@ -32,13 +33,14 @@ exports.create = async({
     console.log(files)
 
     if(files && files.length > 0){
-        filesID = await insertManyDocuments(files, datos)
+        filesID = await insertManyDocuments(files, datosDocumentos)
     }
 
     const newAction = new actionModel({
         FCTM_action_title,
         FCTM_action_type,
         FCTM_action_datetime,
+        FCTM_action_notes,
         FCTM_created_by,
         FCTM_documents: filesID,
     })

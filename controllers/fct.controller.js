@@ -28,7 +28,9 @@ exports.editFct = wrapAsync(async (req, res, next) => {
         return next(new AppError("No se pudo actualizar: los campos deben empezar por FCTM_",403))
     }
 
-    const updatedFct = await fctService.updatedFctmFields(req.params.id, req.body)
+    
+
+    const updatedFct = await fctService.updateFctmFields(req.params.id, req.body)
     if(updatedFct) {
         res.status(200).json(updatedFct)
     } else {

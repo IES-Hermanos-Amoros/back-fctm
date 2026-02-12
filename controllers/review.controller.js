@@ -27,7 +27,7 @@ exports.getReviewById = async (req, res) => {
 exports.createReview = async (req, res) => {
   try {
     const review = await reviewService.create(req.body)
-    res.status(201).json({ ...review, message: 'Reseña creada correctamente.' })
+    res.status(201).json({ review, message: 'Reseña creada correctamente.' })
   } catch (error) {
     res.status(500).json({ error: 'Error al crear la reseña.' })
   }
@@ -42,7 +42,7 @@ exports.editReviewById = async (req, res) => {
         res.status(404).json({ error: 'No se encontró la reseña.'})
     }
 
-    res.status(200).json({ ...review, message: 'Reseña actualizada correctamente.' })
+    res.status(200).json({ review, message: 'Reseña actualizada correctamente.' })
   } catch (error) {
     res.status(500).json({ error: 'Error al actualizar la reseña.' })
   }
@@ -56,7 +56,7 @@ exports.deleteReviewById = async (req, res) => {
         res.status(404).json({ error: 'No se encontró la reseña.'})
     }
 
-    res.status(200).json({...review, message: 'Reseña eliminada correctamente.'})
+    res.status(200).json({ review, message: 'Reseña eliminada correctamente.'})
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar la reseña.' })
   }
