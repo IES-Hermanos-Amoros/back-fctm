@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ACTION_TYPE } = require("./enum")
 
 const actionSchema = new mongoose.Schema({
     // Título identificativo para la acción (que luego servirá para el Gestor Documental y demás)
@@ -11,7 +12,7 @@ const actionSchema = new mongoose.Schema({
     FCTM_action_type: {
         type: String,
         required: true,
-        enum: ["VISITA", "EMAIL", "LLAMADA", "REUNIÓN", "OTRO"]
+        enum: ACTION_TYPE
     },
 
     // Fecha y hora en la que ocurrió la acción

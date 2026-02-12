@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { DUMMY_TYPE } = require("./enum")
 
 const dummySchema = new mongoose.Schema({
 
@@ -38,7 +39,7 @@ const dummySchema = new mongoose.Schema({
         type: String,
         default: "OTRO",
         // Si más adelante quieres controlar tipos:
-        enum: ["TEXTO", "NUMERO", "BOOLEANO", "OTRO"]
+        enum: DUMMY_TYPE
     },
 
     FCTM_documents: [{
