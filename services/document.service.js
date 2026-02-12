@@ -69,15 +69,21 @@ exports.update = async (id, datos) =>
 //eliminar documento
 exports.remove = async id => await documentModel.findByIdAndDelete(id)
 
+
+
+
+
+//INCORRECTO
 //insertar varios documentos
-exports.insertManyDocuments = async (files, userId = null) => {
+exports.insertManyDocuments = async (files, datos) => {
   try {
     if (!files || files.length === 0) {
       throw new Error('No se han recibido archivos para insertar.')
     }
 
+    //Solución ERROR
     //construir los documentos a partir de req.files
-    const docsToInsert = files.map(file => ({
+    /*const docsToInsert = files.map(file => ({
       originalName: file.originalname,
       fileName: file.filename,
       mimeType: file.mimetype,
@@ -85,17 +91,33 @@ exports.insertManyDocuments = async (files, userId = null) => {
       url: `/uploads/${file.filename}`,
       uploadedAt: new Date(),
       user: userId || null,
-    }))
+    }))*/
+    const docsToInsert = files.map(file => ({
+      FCTM_document_name: file.originalname,
+
+      FCTM_document_description: datos?.description || "",
+
+      FCTM_document_type: datos?.type || "GENERAL",
+
+      FCTM_document_created_by: datos?.createdBy,//userId,
+
+      FCTM_document_url: `/uploads/${file.filename}`,
+
+      FCTM_visible_to_profiles: datos?.visible_to_profiles || ["ADMINISTRADOR"],
+
+      /*FCTM_inserted_date: new Date(),
+      FCTM_updated_date: new Date()*/
+    }))   
 
     //insertar los documentos de una vez
     const insertedDocs = await documentModel.insertMany(docsToInsert)
 
     //si hay userId, actualizar lista de documentos
-    if (userId) {
+    if (datos.userId) {
       const docIds = insertedDocs.map(doc => doc._id)
 
-      await userModel.updateOne(
-        { _id: userId },
+      await userManager.updateOne(
+        { _id: datos.userId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }
@@ -105,5 +127,38 @@ exports.insertManyDocuments = async (files, userId = null) => {
   } catch (error) {
     console.error('Error insertando varios documentos:', error)
     throw error
+  }
+}
+
+
+exports.insertManyDocumentsOLD2 = async (files, userId) => {
+  try {
+    // validación inicial de entrada
+    if (!files || files.length === 0) {
+      throw new Error('No hay archivos para insertar.')
+    }
+
+    const createdBy = mongoose.Types.ObjectId.isValid(userId)
+      ? new mongoose.Types.ObjectId(userId)
+      : undefined
+
+    //mapeo de docs a insertar
+    const docsToInsert = files.map(file => ({
+      FCTM_document_name: file.originalname,
+      FCTM_document_url: `/uploads/${file.filename}`,
+      FCTM_document_mimetype: file.mimetype,
+      FCTM_document_size: file.size,
+      FCTM_document_created_by: createdBy,
+      FCTM_document_created_date: new Date(),
+    }))
+
+    const result = await documentModel.insertMany(docsToInsert)
+    return result
+  } catch (error) {
+    console.error(
+      'Error al insertar documentos:',
+      error.message
+    )
+    throw new Error(`Error en la carga de archivos: ${error.message}`)
   }
 }

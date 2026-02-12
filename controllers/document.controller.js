@@ -54,9 +54,9 @@ exports.uploadDocuments = async (req, res) => {
             return res.status(400).json({mensaje: 'No se han subido archivos'})
         }
         const files = req.files
-        const body = req.body
-        const insertedDocuments = await DocumentService.insertManyDocuments(files, body)
-        res.status(200).json(insertedDocuments.length)
+        const datos = req.body
+        const insertedDocuments = await DocumentService.insertManyDocuments(files, datos)
+        res.status(200).json(insertedDocuments)
     } catch (error) {
         res.status(500).json(error)
     }

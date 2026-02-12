@@ -1,4 +1,5 @@
-const documentController = require("../controllers/document.controller")                                                 
+const documentController = require("../controllers/document.controller") 
+const upload = require("../middlewares/upload.middleware")
 const express = require("express")
 const router = express.Router()
 
@@ -8,6 +9,7 @@ router.get("/",documentController.getAllDocuments)
 
 //Mostrar vista para crear un documento
 //router.get("/new",documentController.showNewComment) "VISTA EJS"
+router.post("/upload",upload.array("files",10),documentController.uploadDocuments)
 
 //POST - Crear Documento
 router.post("/",documentController.newDocument)

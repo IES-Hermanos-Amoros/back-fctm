@@ -8,3 +8,6 @@ package-lock.json
 ./tmp
 tmp/
 tmp
+uploads/*
+./uploads/*
+uploads/*

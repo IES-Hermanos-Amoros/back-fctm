@@ -15,13 +15,24 @@ exports.create = async({
     FCTM_action_type,
     FCTM_action_datetime,
     FCTM_created_by,
-    user_Id,
+    user_Id},
     files = []
-    }) => {
+    ) => {
+        //ERROR en el paso de parámetros --> El cierre } estaba después de files = [] y no antes, como debe ser
+
     let filesID
 
+    const datos = {
+        description: FCTM_action_title,
+        type: "OTRO",
+        createdBy: FCTM_created_by,
+        visible_to_profiles: ["ADMINISTRADOR", "PROFESOR"]
+    }
+
+    console.log(files)
+
     if(files && files.length > 0){
-        filesID = await insertManyDocuments(files, FCTM_created_by)
+        filesID = await insertManyDocuments(files, datos)
     }
 
     const newAction = new actionModel({
