@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { JOB_STATUS } = require("./enum")
 
 const jobOfferSchema = new mongoose.Schema({
     // Título de la oferta de trabajo
@@ -45,7 +46,7 @@ const jobOfferSchema = new mongoose.Schema({
     FCTM_job_status: {
         type: String,
         required: true,
-        enum: ["ACTIVA", "CERRADA", "EN PROGRESO"],
+        enum: JOB_STATUS,
         default: "ACTIVA"
     },
 
