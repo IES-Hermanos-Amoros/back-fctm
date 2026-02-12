@@ -1,5 +1,6 @@
 const EnumeradoModel = require("../models/enum.js")
 
-exports.getAllEnums = async() => await EnumeradoModel.find()
-
+exports.getAllEnums = () => {
+    return EnumeradoModel
+}
 exports.getEnumByName = async(enumName) => await EnumeradoModel.findOne({enum: enumName})
