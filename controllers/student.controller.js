@@ -1,33 +1,35 @@
 const userService = require('../services/student.service')
+const AppError = require('../utils/AppError')
+const { wrapAsync } = require('../utils/functions')
 
 // Obtener todos los alumnos
-exports.getAllStudents = async (req, res) => {
+exports.getAllStudents = wrapAsync(async (req, res, next) => {
   try {
     const students = await userService.findAll()
     res.status(200).json(students)
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    next(new AppError(error.message,500))
   }
-}
+})
 
 // Mostrar un alumno por ID
-exports.getStudentById = async (req, res) => {
+exports.getStudentById = wrapAsync(async (req, res, next) => {
   try {
     const { id } = req.params
     const student = await userService.findById(id)
 
     if (!student) {
-      return res.status(404).json({ message: 'Alumno no encontrado' })
+      next(new AppError("Alumno no encontrado",404))
     }
 
     res.status(200).json(student)
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    next(new AppError(error.message,500))
   }
-}
+})
 
 // Actualizar campos específicos (FCTM_)
-exports.updateStudentFctm = async (req, res) => {
+exports.updateStudentFctm = wrapAsync(async (req, res, next) => {
   try {
     const { id } = req.params
     const updateData = req.body
@@ -43,6 +45,6 @@ exports.updateStudentFctm = async (req, res) => {
     const statusCode = error.message.includes('No se han proporcionado')
       ? 400
       : 404
-    res.status(statusCode).json({ message: error.message })
+    next(new AppError(error.message,statusCode))
   }
-}
+})
