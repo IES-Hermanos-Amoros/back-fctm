@@ -48,6 +48,7 @@ exports.createJWT = (req, res, next, userData) => {
     const payload = {
       username: userData.username,
       profile: userData.profile,
+      id: userData._id,
     }
 
     // expiración en 1 hora
