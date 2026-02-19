@@ -24,6 +24,9 @@ const reviewRoutes = require("./routes/review.routes");
 const fctRoutes = require("./routes/fct.routes");
 const actionRoutes = require("./routes/action.routes")
 const dummyRoutes = require("./routes/dummy.routes");
+//LOGINSAOFCTM INI
+const authRoutes = require("./routes/auth.routes");
+//LOGINSAOFCTM FIN
 
 const morganMW = require("./middlewares/morgan.mw");
 const logger = require("./utils/logger");
@@ -78,6 +81,9 @@ app.use(`/api/${process.env.API_VERSION}/reviews`, reviewRoutes);
 app.use(`/api/${process.env.API_VERSION}/fct`, fctRoutes);
 app.use(`/api/${process.env.API_VERSION}/actions`, actionRoutes);
 app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
+//LOGINSAOFCTM INI
+app.use(`/api/${process.env.API_VERSION}/auth`,authRoutes)
+//LOGINSAOFCTM FIN
 
 
 // =================== CATCH-ALL 404 ===================

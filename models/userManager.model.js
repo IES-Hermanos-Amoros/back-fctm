@@ -67,6 +67,18 @@ const userManagerSchema = new mongoose.Schema({
     FCTM_student_other_contact: String,
     FCTM_student_openToWork: { type: Boolean, default: false },
 
+    //LOGINSAOFCTM INI
+    FCTM_password: {
+        type: String,
+        default: null
+    },
+
+    FCTM_firstLogin: {
+        type: Boolean,
+        default: true
+    },
+    //LOGINSAOFCTM FIN
+
     //RELACIONES con OTROS MODELOS
     FCTM_actions: [{
         type: mongoose.Schema.Types.ObjectId,
