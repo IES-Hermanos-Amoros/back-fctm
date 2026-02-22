@@ -86,7 +86,7 @@ exports.login = async ({ username, password }) => {
 };
 
 //Terminar la configuración del usuario
-exports.completeFirstLogin = async (userId, newPassword, newPasswordRep) => {
+exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) => {
 
   if(newPassword != newPasswordRep){
     throw new AppError(
@@ -117,6 +117,7 @@ exports.completeFirstLogin = async (userId, newPassword, newPasswordRep) => {
 
   user.FCTM_password = hashedPassword;
   user.FCTM_firstLogin = false;
+  user.FCTM_contact_email = email
 
   await user.save();
 

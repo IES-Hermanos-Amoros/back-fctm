@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const validator = require("validator");
+
 
 const userManagerSchema = new mongoose.Schema({
     SAO_id: { type: String, unique: true, required: true },
@@ -76,6 +78,17 @@ const userManagerSchema = new mongoose.Schema({
     FCTM_firstLogin: {
         type: Boolean,
         default: true
+    },
+
+    FCTM_contact_email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        default: null,
+        validate: {
+            validator: validator.isEmail,
+            message: "El email introducido no es válido"
+        }
     },
     //LOGINSAOFCTM FIN
 
