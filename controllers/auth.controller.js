@@ -1,7 +1,7 @@
 //LOGINSAOFCTM INI
 const authService = require("../services/auth.service");
 const {wrapAsync} = require("../utils/functions");
-const AppError = require("../utils/appError");
+const AppError = require("../utils/AppError");
 
 
 // 🔐 LOGIN

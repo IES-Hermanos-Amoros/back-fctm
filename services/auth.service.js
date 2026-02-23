@@ -2,7 +2,7 @@
 const {hashPassword,compareLogin} = require("../utils/bcrypt")
 const jwt = require("jsonwebtoken");
 const userManager = require("../models/userManager.model");
-const AppError = require("../utils/appError");
+const AppError = require("../utils/AppError");
 
 const validateStrongPassword = (password) => {
   const strongPasswordRegex =
