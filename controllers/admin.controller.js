@@ -27,7 +27,7 @@ exports.getAdminById = wrapAsync(async (req, res, next) => {
 exports.editAdminById = wrapAsync(async (req, res, next) => {
   try {
     const updatedAdmin = await adminService.update(req.params.id, req.body)
-    next(new AppError("Admin no encontrado",404))
+    if (!updatedAdmin) return next(new AppError("Admin no encontrado",404))
     res.status(200).json(updatedAdmin)
   } catch (error) {
     if (error.message.includes('no es válido')) {
