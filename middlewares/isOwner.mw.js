@@ -72,7 +72,7 @@ export const isOwner = (
 //Para acceder a esta ruta, debes estar logueado y ser el propietario (quién creó, FCTM_user_id) la reseña o ser ADMIN o PROFESOR
 /*router.get(
   "/:id",
-  verifyToken,
+  protect,
   isOwner(ReviewManager, "FCTM_user_id", ["ADMINISTRADOR", "PROFESOR"]),
   getReviewById
 );*/
