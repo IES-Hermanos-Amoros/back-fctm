@@ -1,6 +1,6 @@
+require("dotenv").config();
 const dummyService = require('../services/dummy.service');
 const jwt = require('jsonwebtoken');
-const SECRET = 'mi_clave_secreta_super_segura';
 
 // =======================
 // GET ALL
@@ -120,7 +120,7 @@ exports.loginDummy = async(req,res) => {
         profile: profile || 'STUDENT' // Por defecto estudiante
     };
 
-    const token = jwt.sign(userPayload, SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     // configuración de la cookie
     const cookieOptions = {
