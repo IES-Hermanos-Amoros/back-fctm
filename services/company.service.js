@@ -6,9 +6,19 @@ exports.getAll = async () => {
     })
 }
 
-exports.getById = async (id) => await userManagerModel.findById(id)
+exports.getById = async (id) => {
+    return await userManagerModel.findById(id)
+        .populate({
+            path: "FCTM_job_offers",
+            // Seleccionamos los campos exactos que necesita tu tabla en el frontend
+            select: "FCTM_job_title FCTM_job_start_date FCTM_job_end_date FCTM_job_status"
+        });
+}
 
 exports.update = async (id,datos) => {
+    console.log({
+        id, datos
+    })
     const keys = Object.keys(datos)
 
     const tieneSAO = keys.some(key => key.startsWith("SAO_"))
