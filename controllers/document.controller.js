@@ -1,54 +1,56 @@
 const DocumentService = require("../services/document.service")
+const { wrapAsync } = require("../utils/functions")
+const AppError = require("../utils/AppError")
 
-exports.getAllDocuments = async (req,res) => {
+exports.getAllDocuments = wrapAsync(async (req, res, next) => {
     const documents = await DocumentService.getAll()
     if(documents.length > 0){
         res.status(200).json(documents)
     } else {
-        res.status(404).json("Sin documentos...")
+        next(new AppError("Sin documentos ",404))
     }
-}
+})
 
-exports.getDocumentById = async (req,res) => {
+exports.getDocumentById = wrapAsync(async (req, res, next) => {
     const { id } = req.params
     const document = await DocumentService.getById(id)
     if(document){
         res.status(200).json(document)
     } else {
-        res.status(404).json("Documento no encontrado")
+        next(new AppError("Documento no encontrado",404))
     }
-}
+})
 
-exports.newDocument = async (req,res) => {
+exports.newDocument = wrapAsync(async (req, res, next) => {
     const documentoCreado = await DocumentService.create(req.body)
     if(documentoCreado){
         res.status(200).json(documentoCreado)
     } else {
-        res.status(500).json("Error al crear el documento")
+        next(new AppError("Error al crear el documento",500))
     }
-}
+})
 
-exports.editDocumentById = async (req,res) => {
+exports.editDocumentById = wrapAsync(async (req, res, next) => {
     const { id } = req.params
     const documentUpdated = await DocumentService.update(id, req.body)
     if(documentUpdated){
         res.status(200).json(documentUpdated)
     } else {
-        res.status(500).json("Error al actualizar el documento")
+        next(new AppError("Error al actualizar el documento",500))
     }
-}
+})
 
-exports.deleteDocumentById = async (req,res) => {
+exports.deleteDocumentById = wrapAsync(async (req, res, next) => {
     const { id } = req.params
     const documentDeleted = await DocumentService.remove(id)
     if(documentDeleted){
         res.status(200).json(documentDeleted)
     } else {
-        res.status(500).json("Error al eliminar el documento")
+        next(new AppError("Error al eliminar el documento",500))
     }
-}
+})
 
-exports.uploadDocuments = async (req, res) => {
+exports.uploadDocuments = wrapAsync(async (req, res, next) => {
     try {
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({mensaje: 'No se han subido archivos'})
@@ -58,6 +60,6 @@ exports.uploadDocuments = async (req, res) => {
         const insertedDocuments = await DocumentService.insertManyDocuments(files, datos)
         res.status(200).json(insertedDocuments)
     } catch (error) {
-        res.status(500).json(error)
+        next(new AppError("Error al subir documentos",500))
     }
-}
+})
