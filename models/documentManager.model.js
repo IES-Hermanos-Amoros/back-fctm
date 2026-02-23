@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { DOCUMENT_TYPE } = require("./enum")
 
 const documentSchema = new mongoose.Schema({
     // Nombre del archivo adjunto
@@ -16,7 +17,7 @@ const documentSchema = new mongoose.Schema({
     FCTM_document_type: {
         type: String,
         required: true,
-        enum: ["GENERAL", "MANUAL", "DECRETO/ORDEN/CURRÍCULUM", "CURRÍCULUM VITAE", "OTRO"],
+        enum: DOCUMENT_TYPE,
         default: "GENERAL"
     },
 

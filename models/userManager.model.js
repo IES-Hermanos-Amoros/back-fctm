@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { USER_PROFILES } = require("./enum")
 const validator = require("validator");
 
 
@@ -7,7 +8,7 @@ const userManagerSchema = new mongoose.Schema({
     SAO_profile: {
         type:String,
         required:false,
-        enum: ["ADMINISTRADOR","PROFESOR","ALUMNO","EMPRESA"],
+        enum: USER_PROFILES,
         default:null
     },
     SAO_username: String,
