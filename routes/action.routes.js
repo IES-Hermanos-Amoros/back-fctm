@@ -13,7 +13,7 @@ router.post("/", upload.array("files",10), actionController.newAction)
 router.get("/:id",actionController.getActionById)
 
 //Updatear una acion
-router.put("/:id",actionController.editActionById)
+router.patch("/:id",actionController.editActionById)
 
 //Borrar una accion
 router.delete("/:id",actionController.deleteActionById)

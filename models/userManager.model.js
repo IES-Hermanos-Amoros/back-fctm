@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { USER_PROFILES } = require("./enum")
+const validator = require("validator");
+
 
 const userManagerSchema = new mongoose.Schema({
     SAO_id: { type: String, unique: true, required: true },
@@ -67,6 +69,29 @@ const userManagerSchema = new mongoose.Schema({
     FCTM_student_observations: String,
     FCTM_student_other_contact: String,
     FCTM_student_openToWork: { type: Boolean, default: false },
+
+    //LOGINSAOFCTM INI
+    FCTM_password: {
+        type: String,
+        default: null
+    },
+
+    FCTM_firstLogin: {
+        type: Boolean,
+        default: true
+    },
+
+    FCTM_contact_email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        default: null,
+        validate: {
+            validator: validator.isEmail,
+            message: "El email introducido no es válido"
+        }
+    },
+    //LOGINSAOFCTM FIN
 
     //RELACIONES con OTROS MODELOS
     FCTM_actions: [{

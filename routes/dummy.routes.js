@@ -35,4 +35,9 @@ router.put('/:id', dummyController.editDummyById);
 // Eliminar dummy por ID
 router.delete('/:id', dummyController.deleteDummyById);
 
+
+//Dummy login ficticio /dummy/login
+router.post('/login', dummyController.loginDummy)
+
+
 module.exports = router;

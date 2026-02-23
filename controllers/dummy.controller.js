@@ -1,4 +1,6 @@
+require("dotenv").config();
 const dummyService = require('../services/dummy.service');
+const jwt = require('jsonwebtoken');
 
 // =======================
 // GET ALL
@@ -105,3 +107,31 @@ exports.deleteDummyById = async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar el dummy' });
   }
 };
+
+
+//LOGIN FICTICIO
+exports.loginDummy = async(req,res) => {
+    const { profile, username, id } = req.body;
+
+    // Aquí "trampeamos" el payload del usuario
+    const userPayload = {
+        id: id || '12345',
+        username: username || 'usuario_de_prueba',
+        profile: profile || 'STUDENT' // Por defecto estudiante
+    };
+
+    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // configuración de la cookie
+    const cookieOptions = {
+      expires: new Date(Date.now() + 60 * 60 * 1000),
+      httpOnly: true,
+    }
+
+    res.cookie('jwt', token, cookieOptions)
+
+    res.json({
+        message: "Login ficticio exitoso",
+        token
+    });
+}
