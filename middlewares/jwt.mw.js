@@ -32,7 +32,7 @@ exports.protect = (req, res, next) => {
 
   try {
     // validar el token
-    const decoded = jwt.verify(token, process.env.SECRET_JWT)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
     // guardamos el usuario en req.user
     req.user = decoded
@@ -52,7 +52,7 @@ exports.createJWT = (req, res, next, userData) => {
     }
 
     // expiración en 1 hora
-    const token = jwt.sign(payload, process.env.SECRET_JWT, {
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: '1h',
     })
 

@@ -24,6 +24,7 @@ const reviewRoutes = require("./routes/review.routes");
 const fctRoutes = require("./routes/fct.routes");
 const actionRoutes = require("./routes/action.routes")
 const dummyRoutes = require("./routes/dummy.routes");
+const enumRoutes = require("./routes/enum.routes")
 //LOGINSAOFCTM INI
 const authRoutes = require("./routes/auth.routes");
 //LOGINSAOFCTM FIN
@@ -84,6 +85,7 @@ app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
 //LOGINSAOFCTM INI
 app.use(`/api/${process.env.API_VERSION}/auth`,authRoutes)
 //LOGINSAOFCTM FIN
+app.use(`/api/${process.env.API_VERSION}/enums`,enumRoutes)
 
 
 // =================== CATCH-ALL 404 ===================
