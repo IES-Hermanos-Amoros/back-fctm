@@ -1,53 +1,54 @@
 const ActionService = require("../services/action.service")
+const { wrapAsync } = require("../utils/functions")
 
 //Todas las acciones
-exports.getAllActions = async (req,res) => {
+exports.getAllActions = wrapAsync(async (req,res) => {
     const actions = await ActionService.getAll()
     if(actions.length > 0){
         res.status(200).json(actions)
     } else {
-        res.status(404).json("Sin acciones...")
+        next(new AppError("Sin acciones...",404))
     }
-}
+})
 
 //Obtener por id
-exports.getActionById = async (req,res) => {
+exports.getActionById = wrapAsync(async (req,res) => {
     const { id } = req.params
     const action = await ActionService.getById(id)
     if(action){
         res.status(200).json(action)
     } else {
-        res.status(404).json("Acción no encontrada")
+        next(new AppError("Acción no encontrada",404))
     }
-}
+})
 
 //Crear una nueva acción
-exports.newAction = async (req,res) => {
+exports.newAction = wrapAsync(async (req,res) => {
 
     const actionCreado = await ActionService.create(req.body, req.files)//ERROR req.files={})
     if(actionCreado){
         res.status(200).json(actionCreado)
     } else {
-        res.status(500).json("Error al crear el acción")
+        next(new AppError("Error al crear el acción",500))
     }
-}
+})
 
-exports.editActionById = async (req,res) => {
+exports.editActionById = wrapAsync(async (req,res) => {
     const { id } = req.params
     const actionUpdated = await ActionService.update(id, req.body)
     if(actionUpdated){
         res.status(200).json(actionUpdated)
     } else {
-        res.status(500).json("Error al actualizar la acción")
+        next(new AppError("Error al actualizar la acción",500))
     }
-}
+})
 
-exports.deleteActionById = async (req,res) => {
+exports.deleteActionById = wrapAsync(async (req,res) => {
     const { id } = req.params
     const actionDeleted = await ActionService.remove(id)
     if(actionDeleted){
         res.status(200).json(actionDeleted)
     } else {
-        res.status(500).json("Error al eliminar la acción")
+        next(new AppError("Error al eliminar la acción",500))
     }
-}
+})
