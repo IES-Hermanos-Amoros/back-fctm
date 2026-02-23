@@ -1,9 +1,11 @@
 const userManagerModel = require("../models/userManager.model")
+require("../models/categoryManager.model");
 
 exports.getAll = async () => {
     return await userManagerModel.find({
         SAO_profile: "EMPRESA"
     })
+    .populate("FCTM_company_category", "FCTM_category_name")
 }
 
 exports.getById = async (id) => {
