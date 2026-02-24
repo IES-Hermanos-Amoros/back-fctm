@@ -2,7 +2,7 @@
 const authService = require("../services/auth.service");
 const {wrapAsync} = require("../utils/functions");
 const AppError = require("../utils/AppError");
-
+const {createJWT} = require("../middlewares/jwt.mw")
 
 // 🔐 LOGIN
 exports.login = wrapAsync(async (req, res, next) => {
@@ -21,6 +21,7 @@ exports.login = wrapAsync(async (req, res, next) => {
     if (result.mode === "SAO_LOGIN") {
         return res.status(200).json({
             status: "SAO_REQUIRED",
+            userId: result.userId,
             message: result.message
         });
     }
@@ -33,6 +34,9 @@ exports.login = wrapAsync(async (req, res, next) => {
             message: result.message
         });
     }
+
+    //Todo ha ido correcto, creamos el token, guardándolo en cookie "jwt" como httpOnly
+    result.token = createJWT(req,res,next,result.user)
 
     // 🟢 Login normal OK
     res.status(200).json({
@@ -59,6 +63,10 @@ exports.completeFirstLogin = wrapAsync(async (req, res, next) => {
         newPasswordRep,
         email
     );
+
+     //Todo ha ido correcto, creamos el token, guardándolo en cookie "jwt" como httpOnly
+    result.token = createJWT(req,res,next,result.user)
+
 
     res.status(200).json({
         status: "SUCCESS",

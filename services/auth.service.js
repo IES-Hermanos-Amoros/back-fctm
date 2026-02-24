@@ -14,7 +14,7 @@ const validateStrongPassword = (password) => {
 
 // 🔐 Generar JWT
 // PENDIENTE --> Sustituir por createToken en jwt.mw.js
-const signToken = (user) => {
+/*const signToken = (user) => {
   return jwt.sign(
     {
       id: user._id,
@@ -25,7 +25,7 @@ const signToken = (user) => {
       expiresIn: process.env.JWT_EXPIRES_IN || "1d"
     }
   );
-};
+};*/
 
 // 🟢 LOGIN PRINCIPAL
 exports.login = async ({ username, password }) => {
@@ -50,6 +50,7 @@ exports.login = async ({ username, password }) => {
   if (!user.FCTM_password) {
     return {
       mode: "SAO_LOGIN",
+      userId: user._id,
       message: "Debe autenticarse mediante SAO y actualizar contraseña"
     };
   }
@@ -74,14 +75,14 @@ exports.login = async ({ username, password }) => {
   }
 
   // 🟢 Login válido
-  const token = signToken(user);
+  //const token = signToken(user);
 
   return {
-    token,
+    token:"",
     user: {
-      id: user._id,
+      _id: user._id,
       profile: user.SAO_profile,
-      name: user.SAO_name
+      username: user.SAO_username
     }
   };
 };
@@ -122,14 +123,14 @@ exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) 
 
   await user.save();
 
-  const token = signToken(user);
+  //const token = signToken(user);
 
   return {
-    token,
+    token:"",
     user: {
-      id: user._id,
+      _id: user._id,
       profile: user.SAO_profile,
-      name: user.SAO_name
+      username: user.SAO_username
     }
   };
 };
