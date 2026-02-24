@@ -1,6 +1,7 @@
 require("dotenv").config();
 const dummyService = require('../services/dummy.service');
-const jwt = require('jsonwebtoken');
+//const jwt = require('jsonwebtoken');
+const {createJWT} = require("../middlewares/jwt.mw")
 
 // =======================
 // GET ALL
@@ -110,26 +111,18 @@ exports.deleteDummyById = async (req, res) => {
 
 
 //LOGIN FICTICIO
-exports.loginDummy = async(req,res) => {
+exports.loginDummy = async(req,res,next) => {
     const { profile, username, id } = req.body;
 
     // Aquí "trampeamos" el payload del usuario
     const userPayload = {
-        id: id || '12345',
+        _id: id || '12345',
         username: username || 'usuario_de_prueba',
         profile: profile || 'STUDENT' // Por defecto estudiante
     };
 
-    const token = jwt.sign(userPayload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    // configuración de la cookie
-    const cookieOptions = {
-      expires: new Date(Date.now() + 60 * 60 * 1000),
-      httpOnly: true,
-    }
-
-    res.cookie('jwt', token, cookieOptions)
-
+    const token = createJWT(req,res,next,userPayload) //Creación del TOKEN y guardado en COOKIE "jwt" como httpOnly
+    
     res.json({
         message: "Login ficticio exitoso",
         token
