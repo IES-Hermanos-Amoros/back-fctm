@@ -1,5 +1,5 @@
 require("dotenv").config();
-const session = require("express-session");
+//const session = require("express-session");
 const methodOverride = require("method-override");
 const express = require("express");
 const app = express();
@@ -61,14 +61,14 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 app.use(cors({ origin: checkOrigin, credentials: true }));
 app.use(morganMW.usingMorgan());
-app.use(
+/*app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 3600000, sameSite: "none", httpOnly: false },
   })
-);
+);*/
 
 // =================== RUTAS GENERALES ===================
 app.use(`/api/${process.env.API_VERSION}/sao`, saoRoutes(io));
