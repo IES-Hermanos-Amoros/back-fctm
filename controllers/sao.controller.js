@@ -37,6 +37,7 @@ exports.login = wrapAsync(async (req,res,next)=>{
             req.session.userLogued = userLogued
             console.log("LOGIN SESSION----------INI")            
             console.log(req.session.userLogued)
+            console.log("saoToken", SAOtoken)
             console.log("LOGIN SESSION----------FIN")
 
             //res.render("SAO/dashboard.ejs")
