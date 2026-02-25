@@ -21,7 +21,8 @@ exports.login = wrapAsync(async (req,res,next)=>{
             //req.session.userLogued = userLogued
             //Accedemos al perfil del usuario
             console.log(userData)
-            const jwtToken = jwtMW.createJWT(req,res,next,userData)
+            // Calculamos 5 minutos en milisegundos: 5 * 60 * 1000 = 300,000
+            const SAOtoken = jwtMW.createJWT(req,res,next,userData,"SAOtoken",300000)
             /*console.log("LOGIN USER FOUND----------INI")
             let jsonString = JSON.stringify(userFound);
             jsonString = jsonString.replace(/SAO_Data/g, '');
@@ -31,7 +32,7 @@ exports.login = wrapAsync(async (req,res,next)=>{
             const modifiedObj = userFound
             const userLogued = {
                 data: modifiedObj,
-                token: jwtToken
+                SAOtoken: SAOtoken
             }                
             req.session.userLogued = userLogued
             console.log("LOGIN SESSION----------INI")            
