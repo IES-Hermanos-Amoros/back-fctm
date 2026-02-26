@@ -4,7 +4,7 @@ const fctManagerModel = require("../models/fctManager.model")
 const {wrapAsync} = require("../utils/functions")
 const AppError = require("../utils/AppError")
 const jwtMW = require("../middlewares/jwt.mw")
-//TEMPORAL
+//TEMPORAL PRUEBAS
 //const ejemplo = require("../utils/others/companyList_Ejemplo3.json")
 
 exports.showLogin = (req,res) => {
