@@ -110,4 +110,23 @@ exports.registerFromSAO = wrapAsync(async (req, res, next) => {
 
 });
 
+//Logout
+exports.logout = async(req, res, next) => {
+    try{
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Sesión cerrada correctamente"
+        })
+
+    } catch (error) {
+        next(new AppError("Error al logout. Desc: " + error, 500))
+    }
+}
+
 //LOGINSAOFCTM FIN
