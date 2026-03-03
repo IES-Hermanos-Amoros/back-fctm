@@ -48,6 +48,12 @@ const dummySchema = new mongoose.Schema({
         default: []
     }],
 
+    FCTM_category: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        default: []
+    }],
+
     // Fechas de control
     FCTM_inserted_date: {
         type: Date,
