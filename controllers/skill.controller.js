@@ -1,0 +1,81 @@
+const skillService = require('../services/skill.service');
+const { wrapAsync } = require('../utils/functions');
+const AppError = require('../utils/AppError'); // Asumiendo que esta es la ruta de tu clase AppError
+
+exports.getAllSkills = wrapAsync(async (req, res, next) => {
+    try {
+        const skills = await skillService.getAll();
+        res.status(200).json(skills);
+    } catch (error) {
+        next(new AppError("Error al obtener todas las aptitudes", 500));
+    }
+});
+
+exports.getSkillById = wrapAsync(async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const skill = await skillService.getById(id);
+
+        if (!skill) {
+            return next(new AppError("No se encontró la aptitud", 404));
+        }
+
+        res.status(200).json(skill);
+    } catch (error) {
+        next(new AppError("Error al obtener la aptitud", 500));
+    }
+});
+
+exports.searchSkills = wrapAsync(async (req, res, next) => {
+    try {
+        const { q } = req.query;
+        const skills = await skillService.searchByName(q || "");
+        res.status(200).json(skills);
+    } catch (error) {
+        next(new AppError("Error en la búsqueda de aptitudes", 500));
+    }
+});
+
+exports.createSkill = wrapAsync(async (req, res, next) => {
+    try {
+        const skill = await skillService.create(req.body);
+        res.status(201).json({ skill, message: 'Aptitud creada correctamente.' });
+    } catch (error) {
+        // Manejo específico para duplicados (Unique constraint)
+        if (error.code === 11000) {
+            return next(new AppError("Esta aptitud ya existe en el sistema", 400));
+        }
+        next(new AppError("Error al crear la aptitud", 500));
+    }
+});
+
+exports.editSkillById = wrapAsync(async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const datos = req.body;
+        const skill = await skillService.update(id, datos);
+
+        if (!skill) {
+            return next(new AppError("No se encontró la aptitud", 404));
+        }
+
+        res.status(200).json({ skill, message: 'Aptitud actualizada correctamente.' });
+    } catch (error) {
+        next(new AppError("Error al actualizar la aptitud", 500));
+    }
+});
+
+exports.deleteSkillById = wrapAsync(async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const skill = await skillService.delete(id);
+
+        if (!skill) {
+            return next(new AppError("No se encontró la aptitud", 404));
+        }
+
+        res.status(200).json({ skill, message: 'Aptitud eliminada correctamente.' });
+    } catch (error) {
+        next(new AppError("Error al eliminar la aptitud", 500));
+    }
+});
