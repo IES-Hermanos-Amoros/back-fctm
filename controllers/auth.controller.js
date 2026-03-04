@@ -22,6 +22,7 @@ exports.login = wrapAsync(async (req, res, next) => {
         return res.status(200).json({
             status: "SAO_REQUIRED",
             userId: result.userId,
+            SAO_id: result.SAO_id,
             message: result.message
         });
     }
@@ -31,6 +32,7 @@ exports.login = wrapAsync(async (req, res, next) => {
         return res.status(200).json({
             status: "FIRST_LOGIN",
             userId: result.userId,
+            SAO_id: result.SAO_id,
             message: result.message
         });
     }

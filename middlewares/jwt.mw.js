@@ -1,6 +1,7 @@
 require('dotenv').config()
 const jwt = require('jsonwebtoken')
 const AppError = require('../utils/AppError')
+const { SAO_Data } = require('../models/SAO.model')
 
 function extractToken(req) {
   //TO DO
@@ -89,6 +90,7 @@ exports.createJWT = (req, res, next, userData, cookieName = 'jwt', expireTimeMs 
       username: userData.username,
       profile: userData.profile,
       id: userData._id,
+      SAO_id: userData.SAO_id || null, // Agregamos los datos de SAO al payload
       tokenType: cookieName
     }
 

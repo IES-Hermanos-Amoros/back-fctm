@@ -51,6 +51,7 @@ exports.login = async ({ username, password }) => {
     return {
       mode: "SAO_LOGIN",
       userId: user._id,
+      SAO_id: user.SAO_id,
       message: "Debe autenticarse mediante SAO y actualizar contraseña"
     };
   }
@@ -70,6 +71,7 @@ exports.login = async ({ username, password }) => {
     return {
       firstLogin: true,
       userId: user._id,
+      SAO_id: user.SAO_id,
       message: "Debe cambiar la contraseña antes de continuar"
     };
   }
@@ -81,6 +83,7 @@ exports.login = async ({ username, password }) => {
     token:"",
     user: {
       _id: user._id,
+      SAO_id: user.SAO_id,
       profile: user.SAO_profile,
       username: user.SAO_username
     }
@@ -129,6 +132,7 @@ exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) 
     token:"",
     user: {
       _id: user._id,
+      SAO_id: user.SAO_id,
       profile: user.SAO_profile,
       username: user.SAO_username
     }
@@ -216,6 +220,7 @@ exports.registerFromSAO = async (saoData) => {
   return {
     status: "FIRST_LOGIN",
     userId: newUser._id,
+    SAO_id: newUser.SAO_id,
     message: "Usuario creado. Debe establecer contraseña."
   };
 };
