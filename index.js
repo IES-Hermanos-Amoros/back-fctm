@@ -105,13 +105,18 @@ app.use(errorHandlerMW.errorHandler);
 
 // Arrancar el servidor
 server.listen(port, async() => {
-      console.log(`Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}`);
+      console.log(`✅ Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}`);
       try {
         // Conexión a MongoDB
           await mongodbConfig.conectarMongoDB();
-          console.log("Conectado con MongoDB Atlas!!!");
+          console.log("✅ Conectado con MongoDB Atlas!!!");
+          if (io.engine) {
+            console.log('✅ El servidor Socket.IO está iniciado.');
+          } else {
+            console.log('❌ El servidor Socket.IO no parece estar inicializado.');
+          }
       } catch (error) {
-          console.error("Error al iniciar el servidor o BD:", error);
+          console.error("❌ Error al iniciar el servidor o BD:", error);
           process.exit(1);
       }
 })

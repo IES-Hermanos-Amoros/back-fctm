@@ -10,3 +10,4 @@ tmp
 uploads/*
 ./uploads/*
 uploads/*
+.env

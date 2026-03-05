@@ -26,6 +26,7 @@ router.patch("/change-password", protect, authController.changePassword);
 //Obtener información del usuario logueado
 router.get("/me", protect, authController.getLoguedUser)
 
+router.get("/verify-email/:token", authController.verifyEmail);
 
 module.exports = router;
 //LOGINSAOFCTM FIN
