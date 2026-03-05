@@ -1,15 +1,33 @@
 const fctController = require("../controllers/fct.controller")
 const express = require("express")
+
+const { protect } = require("../middlewares/jwt.mw")
+const { restrictTo } = require("../middlewares/profile.mw")
+
 const router = express.Router()
 
-// GET -> Mostrar listado de fcts
-router.get("/",fctController.findAllFcts)
+// GET listado de fcts
+router.get(
+  "/",
+  protect,
+  restrictTo("ADMIN","TEACHER"),
+  fctController.findAllFcts
+)
 
-// GET/:ID -> Mostrar detalles de un fct
-router.get("/:id",fctController.findFctById)
+// GET fct por id
+router.get(
+  "/:id",
+  protect,
+  restrictTo("ADMIN","TEACHER"),
+  fctController.findFctById
+)
 
-// PUT/:ID -> Updatear un fct
-router.patch("/:id",fctController.editFct)
+// PATCH actualizar fct
+router.patch(
+  "/:id",
+  protect,
+  restrictTo("ADMIN","TEACHER"),
+  fctController.editFct
+)
 
-// Exportar rutas
 module.exports = router
