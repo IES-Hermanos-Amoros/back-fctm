@@ -23,5 +23,9 @@ router.post("/complete-first-login", protectSAO, authController.completeFirstLog
 //PENDIENTE
 router.patch("/change-password", protect, authController.changePassword);
 
+//Obtener información del usuario logueado
+router.get("/me", protect, authController.getLoguedUser)
+
+
 module.exports = router;
 //LOGINSAOFCTM FIN

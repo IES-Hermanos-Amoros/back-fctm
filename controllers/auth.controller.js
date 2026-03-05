@@ -112,4 +112,18 @@ exports.registerFromSAO = wrapAsync(async (req, res, next) => {
 
 });
 
+
+
+
+//Zustand
+exports.getLoguedUser = (req,res,next) => {
+    // authMiddleware ya validó la cookie y puso req.user
+  if(!req.user) return next(new AppError("No estás logueado", 401));
+
+  res.json({
+    success: true,
+    user: req.user
+  });
+
+}
 //LOGINSAOFCTM FIN
