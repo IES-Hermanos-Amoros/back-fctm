@@ -86,6 +86,7 @@ const userManagerSchema = new mongoose.Schema({
         trim: true,
         lowercase: true,
         default: null,
+        unique: true, //Sólo puede existir un email de contacto por usuario
         validate: {
             validator: validator.isEmail,
             message: "El email introducido no es válido"
