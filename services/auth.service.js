@@ -4,6 +4,8 @@ const {hashPassword,compareLogin} = require("../utils/bcrypt")
 const jwt = require("jsonwebtoken");
 const userManager = require("../models/userManager.model");
 const AppError = require("../utils/AppError");
+const { transporter } = require("../utils/nodemailer.config");
+const crypto = require("crypto");
 
 const validateStrongPassword = (password) => {
   const strongPasswordRegex =
@@ -47,12 +49,12 @@ exports.login = async ({ username, password }) => {
   }
 
   // 🔵 CASO 1: Usuario SIN password FCTM → login externo (SAO)
-  if (!user.FCTM_password) {
+  if (!user.FCTM_password || !user.FCTM_email_verified) {
     return {
       mode: "SAO_LOGIN",
       userId: user._id,
       SAO_id: user.SAO_id,
-      message: "Debe autenticarse mediante SAO y actualizar contraseña"
+      message: "Debe autenticarse mediante SAO y actualizar contraseña y verificar su email de contacto"
     };
   }
 
@@ -115,18 +117,37 @@ exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) 
     throw new AppError("Usuario no encontrado", 404);
   }
 
-  console.log("New Password:", newPassword)
+  const emailToken = crypto.randomBytes(32).toString("hex");
   const hashedPassword = await hashPassword(newPassword);
-  console.log("Hashed Password:", hashedPassword)
-
 
   user.FCTM_password = hashedPassword;
   user.FCTM_firstLogin = false;
   user.FCTM_contact_email = email
 
+  user.FCTM_email_verified = false;
+  user.FCTM_email_verification_token = emailToken;
+  user.FCTM_email_verification_expires = Date.now() + 1000 * 60 * 60; // 1h
+
   await user.save();
 
   //const token = signToken(user);
+  const verificationLink = `${process.env.USE_HTTPS === "1" ? "https" : "http"}${process.env.FRONTEND_URL}/verify-email/${emailToken}`;
+  //const verificationLink = "https://localhost:3016/api/v2/auth/verify-email/" + emailToken;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || '"FCT Manager - IES Hermanos Amorós" <sanchez.migben@gmail.com>',
+    to: email,
+    subject: "Verifica tu correo",
+    html: `
+      <h2>Verifica tu cuenta</h2>
+      <p>Haz click en el siguiente enlace:</p>
+      <a href="${verificationLink}">
+        Verificar correo
+      </a>
+    `
+  });
+
+  console.log(`Correo de verificación enviado a ${email} con link: ${verificationLink}`);
 
   return {
     token:"",
@@ -135,8 +156,10 @@ exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) 
       SAO_id: user.SAO_id,
       profile: user.SAO_profile,
       username: user.SAO_username
-    }
+    },
+    mode:"EMAIL_VERIFICATION_REQUIRED",
   };
+
 };
 
 // 🔒 CAMBIAR PASSWORD (usuario logueado)
