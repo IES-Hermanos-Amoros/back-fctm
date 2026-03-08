@@ -1,7 +1,94 @@
 const fctManager = require("../models/fctManager.model");
+const userManager = require("../models/userManager.model");
+
+// 1. Listar todas las FCTs enriquecidas
+exports.findAll = async () => {
+  try {
+    // 1. Obtenemos todas las FCTs
+    const fcts = await fctManager.find({}).lean(); 
+    // .lean() es clave aquí para que nos devuelva objetos JS planos y sea más rápido
+
+    if (fcts.length === 0) return [];
+
+    // 2. Extraemos todos los IDs únicos (estudiantes, empresas y profesores) 
+    // para hacer una sola consulta a la base de datos de usuarios
+    const studentIds = [...new Set(fcts.map(f => f.SAO_student_id))];
+    const teacherIds = [...new Set(fcts.map(f => f.SAO_teacher_id))];
+    const companyIds = [...new Set(fcts.map(f => f.SAO_company_id))];
+
+    const allUserIds = [...new Set([...studentIds, ...teacherIds, ...companyIds])];
+
+    // 3. Buscamos todos los usuarios involucrados de una sola vez
+    const users = await userManager.find({
+      SAO_id: { $in: allUserIds }
+    }).lean();
+
+    // 4. Creamos un mapa (diccionario) para buscar usuarios por SAO_id en tiempo constante O(1)
+    const userMap = users.reduce((acc, user) => {
+      acc[user.SAO_id] = user;
+      return acc;
+    }, {});
+
+    // 5. Cruzamos los datos
+    const enrichedFcts = fcts.map(fct => {
+      const student = userMap[fct.SAO_student_id];
+      const teacher = userMap[fct.SAO_teacher_id];
+      const company = userMap[fct.SAO_company_id];
+
+      return {
+        _id: fct._id,
+        // Datos originales de la FCT
+        SAO_fct_id: fct.SAO_fct_id,
+        SAO_student_id: fct.SAO_student_id, // NIA
+        
+        // Datos enriquecidos del Alumno
+        SAO_student_fullname: student ? student.SAO_name : "No encontrado",
+        
+        // Datos enriquecidos de la Empresa
+        SAO_company_name: company ? company.SAO_name : "No encontrada",
+        SAO_company_city: company ? company.SAO_company_city : "No definida",
+        SAO_company_center_name: fct.SAO_workcenter_name,
+        
+        // Datos enriquecidos del Profesor
+        SAO_teacher_fullname: teacher ? teacher.SAO_name : "No encontrado",
+        
+        // Otros campos que necesites
+        SAO_dates: fct.SAO_dates,
+        SAO_hours: fct.SAO_hours,
+        // Puedes añadir aquí el "número de convenio" si es SAO_company_FCT_Number u otro
+        SAO_instructor_name: fct.SAO_instructor_name,
+        SAO_period: fct.SAO_period,
+        FCTM_ies_instructor: fct.FCTM_ies_instructor ? fct.FCTM_ies_instructor: teacher ? teacher.SAO_name : "No asignado"
+      };
+    });
+
+    return enrichedFcts;
+
+  } catch (error) {
+    console.error("Error en fctService.findAll:", error);
+    throw new Error("Error al recuperar y enriquecer las FCTs");
+  }
+
+  /*    
+    SAO_student_id --> NIA
+    SAO_student_fullname --> Alumno
+    SAO_company_name --> Empresa
+    SAO_company_city --> Localidad
+    SAO_company_center_name --> Centro de Trabajo    
+    SAO_instructor_name --> Instructor Empresa
+    SAO_teacher_fullname --> Tutor Curso
+    FCTM_ies_instructor --> Tutor IES
+    SAO_dates --> Fechas
+    SAO_hours --> Horas    
+    SAO_period --> Curso / Periodo
+  */
+
+};
+
+
 
 // 1. Listar todas las FCTs 
-exports.findAll = async () => {
+exports.findAll_old = async () => {
   try {
     // .find({}) vacío para que traiga todos los registros
     const fcts = await fctManager.find({}).sort({ id: 1 });
@@ -12,8 +99,91 @@ exports.findAll = async () => {
   }
 };
 
-// 2. Buscar por ID (Cualquier FCT)
+// 2. Buscar por ID y devolver enriquecido
 exports.findById = async (id) => {
+  try {
+    // 1. Buscamos la FCT (usamos .lean() para poder manipular el objeto fácilmente)
+    const fct = await fctManager.findOne({ _id: id }).lean();
+    
+    if (!fct) return null;
+
+    // 2. Recolectamos los IDs necesarios
+    const userIds = [
+      fct.SAO_student_id,
+      fct.SAO_teacher_id,
+      fct.SAO_company_id
+    ].filter(Boolean); // Filtramos por si alguno fuera nulo
+
+    // 3. Buscamos los usuarios asociados
+    const users = await userManager.find({
+      SAO_id: { $in: userIds }
+    }).lean();
+
+    // 4. Creamos el mapa para acceso rápido
+    const userMap = users.reduce((acc, user) => {
+      acc[user.SAO_id] = user;
+      return acc;
+    }, {});
+
+    // 5. Construimos el objeto enriquecido manteniendo todos los campos originales
+    const student = userMap[fct.SAO_student_id];
+    const teacher = userMap[fct.SAO_teacher_id];
+    const company = userMap[fct.SAO_company_id];
+
+    return {
+      ...fct, // spread operator para incluir todos los campos originales
+      SAO_student_fullname: student ? student.SAO_name : "No encontrado",
+      SAO_company_name: company ? company.SAO_name : "No encontrada",
+      SAO_company_city: company ? company.SAO_company_city : "No definida",
+      SAO_company_center_name: fct.SAO_workcenter_name,
+      SAO_teacher_fullname: teacher ? teacher.SAO_name : "No encontrado",
+      // Campo calculado adicional si es necesario
+      FCTM_ies_instructor: fct.FCTM_ies_instructor || (teacher ? teacher.SAO_name : "No asignado")
+    };
+
+  } catch (error) {
+    console.error("Error en fctService.findById:", error);
+    throw new Error("Error al buscar y enriquecer la FCT");
+  }
+};
+
+/*
+  SAO_fct_id --> ID FCT
+  SAO_student_course --> Curso Alumno
+  SAO_student_id --> NIA
+  SAO_student_fullname --> Alumno
+  SAO_company_id --> CIF Empresa
+  SAO_company_name --> Empresa
+  SAO_company_city --> Localidad
+  SAO_workcenter_name --> Centro de Trabajo
+  SAO_workcenter_phone --> Teléfono Centro
+  SAO_workcenter_manager --> Responsable Centro
+  SAO_workcenter_manager_id --> ID Responsable Centro
+  SAO_workcenter_email --> Email Centro
+  SAO_teacher_id --> NIF Profesor
+  SAO_teacher_fullname --> Tutor Curso
+  SAO_instructor_id --> ID Instructor Empresa
+  SAO_instructor_name --> Instructor Empresa
+  SAO_period --> Curso / Periodo
+  SAO_dates --> Fechas
+  SAO_schedule --> Horario
+  SAO_hours --> Horas
+  SAO_department --> Departamento
+  SAO_type --> Tipo FCT
+  SAO_Authorization --> Autorización
+  SAO_Erasmus --> Erasmus
+  SAO_termination_date --> Fecha Finalización
+  SAO_instructor_assessment --> Valoración Instructor
+  SAO_observation --> Observaciones
+  SAO_variation --> Variación
+  SAO_link --> Enlace
+  SAO_amount --> Importe
+  FCTM_notes --> Notas Internas
+  FCTM_ies_instructor --> Tutor IES
+ */
+
+// 2. Buscar por ID (Cualquier FCT)
+exports.findById_old = async (id) => {
   try {
     const fct = await fctManager.findOne({ _id: id });
     return fct;
