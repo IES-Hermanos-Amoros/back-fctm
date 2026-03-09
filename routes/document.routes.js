@@ -1,5 +1,6 @@
 const documentController = require("../controllers/document.controller") 
-const { upload, validateFiles } = require("../middlewares/upload.middleware")
+const { protect } = require("../middlewares/jwt.mw")
+const { upload, validateAndScanFiles } = require("../middlewares/upload.middleware")
 const express = require("express")
 const router = express.Router()
 
@@ -9,7 +10,13 @@ router.get("/",documentController.getAllDocuments)
 
 //Mostrar vista para crear un documento
 //router.get("/new",documentController.showNewComment) "VISTA EJS"
-router.post("/upload",upload.array("files",10), validateFiles, documentController.uploadDocuments)
+router.post(
+    "/upload",
+    protect,
+    upload.array("files", 10),
+    validateAndScanFiles,
+    documentController.uploadDocuments
+);
 
 //POST - Crear Documento
 router.post("/",documentController.newDocument)
