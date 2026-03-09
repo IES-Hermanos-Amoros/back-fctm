@@ -41,7 +41,11 @@ exports.editJobOffer = wrapAsync(async (req, res, next) => {
 
 exports.deleteJobOffer= wrapAsync(async (req, res, next) => {
     try {
-        const removedOffer = await jobOfferService.removeJobOffer(req.params.id)
+        const { companyId } = req.query
+        const removedOffer = await jobOfferService.removeJobOffer(req.params.id, companyId)
+        if (!removedOffer) {
+            return next(new AppError("Oferta no encontrada",404))
+        }
         res.status(200).json(removedOffer)
     } catch (error) {
         next(new AppError("Error al eliminar oferta",500))
