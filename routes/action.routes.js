@@ -1,50 +1,50 @@
-
-const actionController = require("../controllers/action.controller")
-const upload = require("../middlewares/upload.middleware")
-const { protect } = require("../middlewares/jwt.mw")
-const { restrictTo } = require("../middlewares/profile.mw")
-
 const express = require("express")
 const router = express.Router()
 
-// mostrar listado de acciones
+const actionController = require("../controllers/action.controller")
+const upload = require("../middlewares/upload.middleware")
+
+const { protect } = require("../middlewares/jwt.mw")
+const { restrictTo } = require("../middlewares/profile.mw")
+
+// Mostrar listado de acciones
 router.get(
   "/",
   protect,
-  restrictTo("ADMIN","TEACHER"),
+  restrictTo("ADMINISTRADOR","PROFESOR"),
   actionController.getAllActions
 )
 
-// crear una accion
+// Crear una acción
 router.post(
   "/",
   protect,
-  restrictTo("ADMIN","TEACHER"),
+  restrictTo("ADMINISTRADOR","PROFESOR"),
   upload.array("files",10),
   actionController.newAction
 )
 
-// mostrar accion por id
+// Mostrar acción por ID
 router.get(
   "/:id",
   protect,
-  restrictTo("ADMIN","TEACHER"),
+  restrictTo("ADMINISTRADOR","PROFESOR"),
   actionController.getActionById
 )
 
-// actualizar accion
+// Actualizar una acción
 router.patch(
   "/:id",
   protect,
-  restrictTo("ADMIN","TEACHER"),
+  restrictTo("ADMINISTRADOR","PROFESOR"),
   actionController.editActionById
 )
 
-// borrar accion
+// Borrar una acción
 router.delete(
   "/:id",
   protect,
-  restrictTo("ADMIN","TEACHER"),
+  restrictTo("ADMINISTRADOR","PROFESOR"),
   actionController.deleteActionById
 )
 
