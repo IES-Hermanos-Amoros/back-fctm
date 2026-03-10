@@ -1,9 +1,9 @@
 const reviewController = require("../controllers/review.controller");
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/jwt.mw.js");
-const { restrictTo } = require("../middleware/profile.mw.js");
-const { isOwner } = require("../middleware/isOwner.mw.js");
+const { protect } = require("../middlewares/jwt.mw.js");
+const { restrictTo } = require("../middlewares/profile.mw.js");
+const { isOwner } = require("../middlewares/isOwner.mw.js");
 const ReviewManager = require("../models/reviewManager.model.js");
 
 router.get(
