@@ -1,15 +1,14 @@
-const express = require("express")
-const router = express.Router()
-const companyController = require("../controllers/company.controller")
+const express = require("express");
+const router = express.Router();
+const companyController = require("../controllers/company.controller");
+const { protect } = require("../middlewares/jwt.mw");
+const { restrictTo } = require("../middlewares/profile.mw");
+const { isSelf } = require("../middlewares/isSelf.mw");
 
-// GET - Obtener todas las empresas
-router.get("/", companyController.getAllCompanies)
+router.get("/", protect, restrictTo("ADMIN", "TEACHER", "STUDENT"), companyController.getAllCompanies);
 
-// GET - Obtener empresa por ID
-router.get("/:id", companyController.getCompanyById)
+router.get("/:id", protect, isSelf("ADMIN", "TEACHER", "STUDENT", "id"), companyController.getCompanyById);
 
-// PUT - Actualizar empresa
-router.patch("/:id", companyController.editCompanyById)
+router.patch("/:id", protect, isSelf("ADMIN", "TEACHER", "id"), companyController.editCompanyById);
 
-// Exportar Rutas
-module.exports = router
+module.exports = router;
