@@ -29,7 +29,7 @@ const jobOfferSchema = new mongoose.Schema({
     // Fecha de cierre de la oferta
     FCTM_job_end_date: {
         type: Date,
-        required: true
+        //required: true
     },
 
     // Observaciones de la oferta de trabajo
