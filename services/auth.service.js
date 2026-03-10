@@ -1,9 +1,13 @@
 //LOGINSAOFCTM INI
 require("dotenv").config();
 const {hashPassword,compareLogin} = require("../utils/bcrypt")
-const jwt = require("jsonwebtoken");
+//const jwt = require("jsonwebtoken");
 const userManager = require("../models/userManager.model");
 const AppError = require("../utils/AppError");
+const { NODEMAILER_ACTIVE, transporter } = require("../utils/nodemailer.config");
+const crypto = require("crypto");
+const logger = require("../utils/logger");
+
 
 const validateStrongPassword = (password) => {
   const strongPasswordRegex =
@@ -12,20 +16,6 @@ const validateStrongPassword = (password) => {
   return strongPasswordRegex.test(password);
 };
 
-// 🔐 Generar JWT
-// PENDIENTE --> Sustituir por createToken en jwt.mw.js
-/*const signToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id,
-      profile: user.SAO_profile
-    },
-    process.env.JWT_SECRET || "contraseñasupersecretaJWT",
-    {
-      expiresIn: process.env.JWT_EXPIRES_IN || "1d"
-    }
-  );
-};*/
 
 // 🟢 LOGIN PRINCIPAL
 exports.login = async ({ username, password }) => {
@@ -47,11 +37,12 @@ exports.login = async ({ username, password }) => {
   }
 
   // 🔵 CASO 1: Usuario SIN password FCTM → login externo (SAO)
-  if (!user.FCTM_password) {
+  if (!user.FCTM_password || !user.FCTM_email_verified) {
     return {
       mode: "SAO_LOGIN",
       userId: user._id,
-      message: "Debe autenticarse mediante SAO y actualizar contraseña"
+      SAO_id: user.SAO_id,
+      message: "Debe autenticarse mediante SAO y actualizar contraseña y verificar su email de contacto"
     };
   }
 
@@ -70,6 +61,7 @@ exports.login = async ({ username, password }) => {
     return {
       firstLogin: true,
       userId: user._id,
+      SAO_id: user.SAO_id,
       message: "Debe cambiar la contraseña antes de continuar"
     };
   }
@@ -81,6 +73,7 @@ exports.login = async ({ username, password }) => {
     token:"",
     user: {
       _id: user._id,
+      SAO_id: user.SAO_id,
       profile: user.SAO_profile,
       username: user.SAO_username
     }
@@ -112,27 +105,55 @@ exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) 
     throw new AppError("Usuario no encontrado", 404);
   }
 
-  console.log("New Password:", newPassword)
+  const emailToken = crypto.randomBytes(32).toString("hex");
   const hashedPassword = await hashPassword(newPassword);
-  console.log("Hashed Password:", hashedPassword)
-
 
   user.FCTM_password = hashedPassword;
   user.FCTM_firstLogin = false;
   user.FCTM_contact_email = email
 
+  user.FCTM_email_verified = false;
+  user.FCTM_email_verification_token = emailToken;
+  user.FCTM_email_verification_expires = Date.now() + 1000 * 60 * 60; // 1h
+
   await user.save();
 
   //const token = signToken(user);
+  const verificationLink = `${process.env.USE_HTTPS === "1" ? "https" : "http"}${process.env.FRONTEND_URL}/verify-email/${emailToken}`;
+  //const verificationLink = "https://localhost:3016/api/v2/auth/verify-email/" + emailToken;
+
+  if(NODEMAILER_ACTIVE) {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || '"FCT Manager - IES Hermanos Amorós" <sanchez.migben@gmail.com>',
+      to: email,
+      subject: "Verifica tu correo",
+      html: `
+        <h2>Verifica tu cuenta</h2>
+        <p>Haz click en el siguiente enlace:</p>
+        <a href="${verificationLink}">
+          Verificar correo
+        </a>
+      `
+    });
+
+    console.log(`✅ Correo de verificación enviado a ${email} con link: ${verificationLink}`);
+  } else {
+    console.warn("⚠️ Nodemailer is disabled. Set NODEMAILER_ACTIVE=1 to enable it.");
+    logger.access.info(`⚠️ Simulación: Correo de verificación para ${email} con link: ${verificationLink}`);
+    console.log(`⚠️ Simulación: Correo de verificación para ${email} con link: ${verificationLink}`);
+  }
 
   return {
     token:"",
     user: {
       _id: user._id,
+      SAO_id: user.SAO_id,
       profile: user.SAO_profile,
       username: user.SAO_username
-    }
+    },
+    mode:"EMAIL_VERIFICATION_REQUIRED",
   };
+
 };
 
 // 🔒 CAMBIAR PASSWORD (usuario logueado)
@@ -216,6 +237,7 @@ exports.registerFromSAO = async (saoData) => {
   return {
     status: "FIRST_LOGIN",
     userId: newUser._id,
+    SAO_id: newUser.SAO_id,
     message: "Usuario creado. Debe establecer contraseña."
   };
 };

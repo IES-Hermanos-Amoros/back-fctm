@@ -57,6 +57,7 @@ exports.uploadDocuments = wrapAsync(async (req, res, next) => {
         }
         const files = req.files
         const datos = req.body
+        datos.createdBy = req.user.id
         const insertedDocuments = await DocumentService.insertManyDocuments(files, datos)
         res.status(200).json(insertedDocuments)
     } catch (error) {

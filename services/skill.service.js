@@ -1,0 +1,38 @@
+const skillModel = require("../models/skillManager.model");
+
+// Devolver solo aptitudes verificadas (ordenadas alfabéticamente)
+exports.getAll = async () => {
+    return await skillModel.find({ FCTM_skill_verified: true }).sort({ FCTM_skill_name: 1 });
+};
+
+// Devolver una aptitud por ID (independientemente de si está verificada o no)
+exports.getById = async (id) => {
+    return await skillModel.findById(id);
+};
+
+// Buscar solo entre las aptitudes verificadas
+exports.searchByName = async (termino) => {
+    return await skillModel.find({
+        FCTM_skill_name: { $regex: termino, $options: "i" },
+        FCTM_skill_verified: true // Solo sugerimos las oficiales
+    }).limit(10);
+};
+
+// Crear una nueva aptitud (por defecto FCTM_skill_verified será false según el modelo)
+exports.create = async (datos) => {
+    const newSkill = new skillModel(datos);
+    return await newSkill.save();
+};
+
+// Edita una aptitud existente (útil para que un admin la verifique)
+exports.update = async (id, datos) => {
+    return await skillModel.findByIdAndUpdate(id, datos, { 
+        new: true, 
+        runValidators: true 
+    });
+};
+
+// Elimina una aptitud
+exports.delete = async (id) => {
+    return await skillModel.findByIdAndDelete(id);
+};

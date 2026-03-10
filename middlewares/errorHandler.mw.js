@@ -199,6 +199,8 @@ exports.errorHandler = (err, req, res, next) => {
   if (err.message && err.message.includes('bcrypt'))
     error = { ...error, ...handleBcryptError(), isOperational: true }
 
+  console.log(`Error capturado por el middleware de manejo de errores: ${error.message} (Status: ${error.status})`)
+
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(error, res)
   } else {

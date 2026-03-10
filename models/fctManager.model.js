@@ -33,6 +33,7 @@ const fctManagerSchema = new Schema({
     SAO_amount: { type: String },
     // Campos nuevos personalizados
     FCTM_notes: { type: String },
+    FCTM_ies_instructor: { type: String },
     FCTM_inserted_date: { type: Date, default: Date.now },
     FCTM_updated_date: { type: Date, default: Date.now }
 });
