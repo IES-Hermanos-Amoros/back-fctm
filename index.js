@@ -36,6 +36,8 @@ const AppError = require("./utils/AppError");
 const cors = require("cors");
 const { checkOrigin, whiteList } = require("./utils/cors.config");
 
+const cookieParser = require('cookie-parser');
+
 // =================== CONFIG EXPRESS ===================
 const server =
   usingHTTPS == 1
@@ -58,6 +60,8 @@ app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+app.use(cookieParser());
 
 app.use(cors({ origin: checkOrigin, credentials: true }));
 app.use(morganMW.usingMorgan());
