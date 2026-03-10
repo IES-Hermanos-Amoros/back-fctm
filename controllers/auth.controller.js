@@ -111,22 +111,18 @@ exports.registerFromSAO = wrapAsync(async (req, res, next) => {
 });
 
 //Logout
-exports.logout = async(req, res, next) => {
-    try{
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none"
-        })
+exports.logout = wrapAsync(async (req, res, next) => {
+    // Borramos la cookie 'jwt'
+    res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: true, // Mantener igual que cuando se creó
+        sameSite: "none"
+    });
 
-        return res.status(200).json({
-            success: true,
-            message: "Sesión cerrada correctamente"
-        })
-
-    } catch (error) {
-        next(new AppError("Error al logout. Desc: " + error, 500))
-    }
-}
+    res.status(200).json({
+        status: "SUCCESS",
+        message: "Sesión cerrada correctamente y cookie eliminada"
+    });
+});
 
 //LOGINSAOFCTM FIN

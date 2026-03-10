@@ -23,5 +23,7 @@ router.post("/complete-first-login", protectSAO, authController.completeFirstLog
 //PENDIENTE
 router.patch("/change-password", protect, authController.changePassword);
 
+router.post("/logout", authController.logout);
+
 module.exports = router;
 //LOGINSAOFCTM FIN
