@@ -1,16 +1,16 @@
 //LOGINSAOFCTM INI
-require("dotenv").config();
-const {hashPassword,compareLogin} = require("../utils/bcrypt")
-const jwt = require("jsonwebtoken");
-const userManager = require("../models/userManager.model");
-const AppError = require("../utils/AppError");
+require('dotenv').config()
+const { hashPassword, compareLogin } = require('../utils/bcrypt')
+const jwt = require('jsonwebtoken')
+const userManager = require('../models/userManager.model')
+const AppError = require('../utils/AppError')
 
-const validateStrongPassword = (password) => {
+const validateStrongPassword = password => {
   const strongPasswordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._\-#])[A-Za-z\d@$!%*?&._\-#]{8,}$/;
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._\-#])[A-Za-z\d@$!%*?&._\-#]{8,}$/
 
-  return strongPasswordRegex.test(password);
-};
+  return strongPasswordRegex.test(password)
+}
 
 // 🔐 Generar JWT
 // PENDIENTE --> Sustituir por createToken en jwt.mw.js
@@ -30,39 +30,36 @@ const validateStrongPassword = (password) => {
 // 🟢 LOGIN PRINCIPAL
 exports.login = async ({ username, password }) => {
   if (!username || !password) {
-    throw new AppError("Debe proporcionar usuario y contraseña", 400);
+    throw new AppError('Debe proporcionar usuario y contraseña', 400)
   }
 
   // Buscar usuario
   const user = await userManager
     .findOne({ SAO_username: username })
-    .select("+FCTM_password");
+    .select('+FCTM_password')
 
   if (!user) {
     //throw new AppError("Credenciales incorrectas", 401);
     return {
-      mode: "SAO_NEWUSER_LOGIN",
-      message: "Debe autenticarse mediante SAO (e insertar usuario)"
-    };
+      mode: 'SAO_NEWUSER_LOGIN',
+      message: 'Debe autenticarse mediante SAO (e insertar usuario)',
+    }
   }
 
   // 🔵 CASO 1: Usuario SIN password FCTM → login externo (SAO)
   if (!user.FCTM_password) {
     return {
-      mode: "SAO_LOGIN",
+      mode: 'SAO_LOGIN',
       userId: user._id,
-      message: "Debe autenticarse mediante SAO y actualizar contraseña"
-    };
+      message: 'Debe autenticarse mediante SAO y actualizar contraseña',
+    }
   }
 
   // 🔵 CASO 2: Login normal FCTM
-  const passwordCorrect = await compareLogin(
-    password,
-    user.FCTM_password
-  );
+  const passwordCorrect = await compareLogin(password, user.FCTM_password)
 
   if (!passwordCorrect) {
-    throw new AppError("Credenciales incorrectas", 401);
+    throw new AppError('Credenciales incorrectas', 401)
   }
 
   // 🟡 Primer login
@@ -70,154 +67,149 @@ exports.login = async ({ username, password }) => {
     return {
       firstLogin: true,
       userId: user._id,
-      message: "Debe cambiar la contraseña antes de continuar"
-    };
+      message: 'Debe cambiar la contraseña antes de continuar',
+    }
   }
 
   // 🟢 Login válido
   //const token = signToken(user);
 
   return {
-    token:"",
+    token: '',
     user: {
       _id: user._id,
       profile: user.SAO_profile,
-      username: user.SAO_username
-    }
-  };
-};
+      username: user.SAO_username,
+    },
+  }
+}
 
 //Terminar la configuración del usuario
-exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) => {
-
-  if(newPassword != newPasswordRep){
-    throw new AppError(
-      "Las contraseñas no coinciden",
-      400
-    );
+exports.completeFirstLogin = async (
+  userId,
+  newPassword,
+  newPasswordRep,
+  email
+) => {
+  if (newPassword != newPasswordRep) {
+    throw new AppError('Las contraseñas no coinciden', 400)
   }
 
   if (!validateStrongPassword(newPassword)) {
     throw new AppError(
-      "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial",
+      'La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial',
       400
-    );
+    )
   }
 
   const user = await userManager
-    .findById(userId)
-    .select("+FCTM_password");
+    .findOne({ SAO_id: userId })
+    .select('+FCTM_password')
 
   if (!user) {
-    throw new AppError("Usuario no encontrado", 404);
+    throw new AppError('Usuario no encontrado', 404)
   }
 
-  console.log("New Password:", newPassword)
-  const hashedPassword = await hashPassword(newPassword);
-  console.log("Hashed Password:", hashedPassword)
+  const hashedPassword = await hashPassword(newPassword)
 
-
-  user.FCTM_password = hashedPassword;
-  user.FCTM_firstLogin = false;
+  user.FCTM_password = hashedPassword
+  user.FCTM_firstLogin = false
   user.FCTM_contact_email = email
 
-  await user.save();
+  await user.save()
 
   //const token = signToken(user);
 
   return {
-    token:"",
+    token: '',
     user: {
       _id: user._id,
       profile: user.SAO_profile,
-      username: user.SAO_username
-    }
-  };
-};
+      username: user.SAO_username,
+    },
+  }
+}
 
 // 🔒 CAMBIAR PASSWORD (usuario logueado)
-exports.changePassword = async (
-  userId,
-  currentPassword,
-  newPassword
-) => {
-
+exports.changePassword = async (userId, currentPassword, newPassword) => {
   if (!validateStrongPassword(newPassword)) {
     throw new AppError(
-      "La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial",
+      'La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial',
       400
-    );
+    )
   }
 
-  const user = await userManager
-    .findById(userId)
-    .select("+FCTM_password");
+  const user = await userManager.findById(userId).select('+FCTM_password')
 
   if (!user) {
-    throw new AppError("Usuario no encontrado", 404);
+    throw new AppError('Usuario no encontrado', 404)
   }
 
-  const correct = await compareLogin(
-    currentPassword,
-    user.FCTM_password
-  );
+  const correct = await compareLogin(currentPassword, user.FCTM_password)
 
   if (!correct) {
-    throw new AppError("La contraseña actual no es correcta", 401);
+    throw new AppError('La contraseña actual no es correcta', 401)
   }
 
-  const samePassword = await compareLogin(
-    newPassword,
-    user.FCTM_password
-  );
+  const samePassword = await compareLogin(newPassword, user.FCTM_password)
 
   if (samePassword) {
     throw new AppError(
-      "La nueva contraseña no puede ser igual a la anterior",
+      'La nueva contraseña no puede ser igual a la anterior',
       400
-    );
+    )
   }
 
-  const hashedPassword = await hashPassword(newPassword);
+  const hashedPassword = await hashPassword(newPassword)
 
-  user.FCTM_password = hashedPassword;
+  user.FCTM_password = hashedPassword
 
-  await user.save();
+  await user.save()
 
-  return { message: "Contraseña actualizada correctamente" };
-};
+  return { message: 'Contraseña actualizada correctamente' }
+}
 
 // 🆕 REGISTRAR USUARIO DESDE SAO
-exports.registerFromSAO = async (saoData) => {
-
+exports.registerFromSAO = async saoData => {
+  console.log('###############################################')
+  console.log('', saoData)
+  console.log('###############################################')
   if (!saoData || !saoData.SAO_username) {
-    throw new AppError("Datos SAO inválidos", 400);
+    throw new AppError('Datos SAO inválidos', 400)
   }
 
   const existingUser = await userManager.findOne({
-    SAO_username: saoData.SAO_username
-  });
+    SAO_username: saoData.SAO_username,
+  })
 
   if (existingUser) {
-    throw new AppError("El usuario ya existe en FCTM", 400);
+    throw new AppError('El usuario ya existe en FCTM', 400)
   }
 
   // 🔥 Creamos objeto completo exactamente como viene de SAO
   const userData = {
-    ...saoData,            // ← TODOS los campos SAO (incluidos null)
+    ...saoData, // ← TODOS los campos SAO (incluidos null)
 
     // 🔐 Campos propios FCTM
+    FCTM_contact_email: saoData.SAO_email,
     FCTM_password: null,
-    FCTM_firstLogin: true
-  };
+    FCTM_firstLogin: true,
+  }
 
-  const newUser = await userManager.create(userData);
+  try {
+    const newUser = await userManager.create(userData)
 
-  return {
-    status: "FIRST_LOGIN",
-    userId: newUser._id,
-    message: "Usuario creado. Debe establecer contraseña."
-  };
-};
+    console.log('Objeto de user de SAO desde el controller', newUser)
+
+    return {
+      status: 'FIRST_LOGIN',
+      userId: newUser._id,
+      message: 'Usuario creado. Debe establecer contraseña.',
+    }
+  } catch (error) {
+    console.log(error)
+    throw new AppError('Error al crear usuario desde SAO', 500)
+  }
+}
 
 //LOGINSAOFCTM FIN
