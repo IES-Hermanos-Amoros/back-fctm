@@ -171,7 +171,7 @@ exports.changePassword = async (
   }
 
   const user = await userManager
-    .findById(userId)
+    .findById(userId) //JERO .findById({SAO_id: userId}) --> Este cambio es muy importante y lo comento, de momento
     .select("+FCTM_password");
 
   if (!user) {
@@ -228,6 +228,7 @@ exports.registerFromSAO = async (saoData) => {
     ...saoData,            // ← TODOS los campos SAO (incluidos null)
 
     // 🔐 Campos propios FCTM
+    FCTM_contact_email: saoData.SAO_email || null, //JERO --> Por defecto, el email de contacto se inicializa con el email de SAO (si existe). Luego el usuario podrá cambiarlo en su perfil.
     FCTM_password: null,
     FCTM_firstLogin: true
   };

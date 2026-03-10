@@ -20,6 +20,7 @@
     "bcrypt": "^5.1.1",
     "cheerio": "^1.0.0",
     "clamscan": "^2.4.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "date-fns": "^4.1.0",

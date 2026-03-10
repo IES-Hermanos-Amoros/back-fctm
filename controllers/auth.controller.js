@@ -115,6 +115,9 @@ exports.changePassword = wrapAsync(async (req, res, next) => {
 exports.registerFromSAO = wrapAsync(async (req, res, next) => {
 
   const result = await authService.registerFromSAO(req.body.data);
+  //JERO
+  //const result = await authService.registerFromSAO(req.body)
+
 
   res.status(201).json(result);
 
