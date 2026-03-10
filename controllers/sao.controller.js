@@ -1,146 +1,196 @@
-const saoService = require("../services/sao.service")
-const userManagerModel = require("../models/userManager.model")
-const fctManagerModel = require("../models/fctManager.model")
-const {wrapAsync} = require("../utils/functions")
-const AppError = require("../utils/AppError")
-const jwtMW = require("../middlewares/jwt.mw")
+const saoService = require('../services/sao.service')
+const userManagerModel = require('../models/userManager.model')
+const fctManagerModel = require('../models/fctManager.model')
+const { wrapAsync } = require('../utils/functions')
+const AppError = require('../utils/AppError')
+const jwtMW = require('../middlewares/jwt.mw')
 //TEMPORAL PRUEBAS
 //const ejemplo = require("../utils/others/companyList_Ejemplo3.json")
 
-exports.showLogin = (req,res) => {
-    res.render("SAO/loginSAO.ejs")
+exports.showLogin = (req, res) => {
+  res.render('SAO/loginSAO.ejs')
 }
 
-exports.login = wrapAsync(async (req,res,next)=>{
-    //const { username, password } = req.body    
-    const userData = req.body
-    await saoService.loginService(userData,async function(err,userFound){
-        if(err){
-            next(new AppError(err,404))
-        }else{
-            //req.session.userLogued = userLogued
-            //Accedemos al perfil del usuario
-            console.log(userData)
-            // Calculamos 5 minutos en milisegundos: 5 * 60 * 1000 = 300,000
-            const SAOtoken = jwtMW.createJWT(req,res,next,userData,"SAOtoken",300000)
-            /*console.log("LOGIN USER FOUND----------INI")
+exports.login = wrapAsync(async (req, res, next) => {
+  //const { username, password } = req.body
+  const userData = req.body
+  await saoService.loginService(userData, async function (err, userFound) {
+    if (err) {
+      next(new AppError(err, 404))
+    } else {
+      //req.session.userLogued = userLogued
+      //Accedemos al perfil del usuario
+
+      // Calculamos 5 minutos en milisegundos: 5 * 60 * 1000 = 300,000
+      const SAOtoken = jwtMW.createJWT(
+        req,
+        res,
+        next,
+        userData,
+        'SAOtoken',
+        300000
+      )
+
+      /*console.log("LOGIN USER FOUND----------INI")
             let jsonString = JSON.stringify(userFound);
             jsonString = jsonString.replace(/SAO_Data/g, '');
-            const modifiedObj = JSON.parse(jsonString);            
+            const modifiedObj = JSON.parse(jsonString);
             console.log(modifiedObj)
             console.log("LOGIN USER FOUND----------FIN")*/
-            const modifiedObj = userFound
-            const userLogued = {
-                data: modifiedObj,
-                SAOtoken: SAOtoken
-            }                
-            req.session.userLogued = userLogued
-            console.log("LOGIN SESSION----------INI")            
-            console.log(req.session.userLogued)
-            console.log("saoToken", SAOtoken)
-            console.log("LOGIN SESSION----------FIN")
+      const modifiedObj = userFound
+      const userLogued = {
+        data: modifiedObj,
+        SAOtoken: SAOtoken,
+      }
 
-            //res.render("SAO/dashboard.ejs")
-            res.status(200).json(userLogued)            
-        }
-    })
+      console.log('LOGIN SESSION----------INI')
+      console.log(userLogued)
+      console.log('saoToken', SAOtoken)
+      console.log('LOGIN SESSION----------FIN')
+
+      //res.render("SAO/dashboard.ejs")
+      res.status(200).json(userLogued)
+    }
+  })
 })
 
-exports.companies = (io) => wrapAsync(async (req,res,next)=>{
+exports.companies = io =>
+  wrapAsync(async (req, res, next) => {
     //const userData = req.decoded.userData - TEMPORAL
-    const userData = req.body     
-    console.log(userData)   
-    
+    const userData = req.body
+
     //TEMPORAL
-    //res.status(200).json(ejemplo)    
-    await saoService.companiesSinc(io,res,userData,async function(err,companyList){
-        if(err){
-            next(new AppError(err,404))
-        }else{
-            res.status(200).json(companyList)            
+    //res.status(200).json(ejemplo)
+    await saoService.companiesSinc(
+      io,
+      res,
+      userData,
+      async function (err, companyList) {
+        if (err) {
+          next(new AppError(err, 404))
+        } else {
+          res.status(200).json(companyList)
         }
-    })
+      }
+    )
+  })
+
+exports.companiesInsertUpdateDB = wrapAsync(async (req, res, next) => {
+  const { newCompanies, updatedCompanies } = req.body
+  console.log('companiesInsertUpdateBD')
+  console.log(newCompanies)
+  console.log(updatedCompanies)
+  console.log('-----------------------')
+  if (
+    (newCompanies && newCompanies.length > 0) ||
+    (updatedCompanies && updatedCompanies.length > 0)
+  ) {
+    await userManagerModel.insertUpdateManyUsers(
+      newCompanies,
+      updatedCompanies,
+      async function (err, resultData) {
+        if (err) {
+          next(new AppError(err, 404))
+        } else {
+          res.status(200).json(resultData)
+        }
+      }
+    )
+  } else {
+    next(
+      new AppError('No hay datos desde Request para insertar/actualizar', 404)
+    )
+  }
 })
 
-exports.companiesInsertUpdateDB = wrapAsync(async (req,res,next)=>{
-    const {newCompanies, updatedCompanies} = req.body
-    console.log("companiesInsertUpdateBD")
-    console.log(newCompanies)
-    console.log(updatedCompanies)        
-    console.log("-----------------------")
-    if((newCompanies && newCompanies.length > 0) || (updatedCompanies && updatedCompanies.length > 0)){
-        await userManagerModel.insertUpdateManyUsers(newCompanies,updatedCompanies,async function(err,resultData){
-            if(err){
-                next(new AppError(err,404))
-            }else{
-                res.status(200).json(resultData)            
-            }
-        })
-    } else {
-        next(new AppError("No hay datos desde Request para insertar/actualizar",404))
-    }
-})
-
-exports.teachers = (io) => wrapAsync(async (req,res,next)=>{
-    //const userData = req.decoded.userData 
+exports.teachers = io =>
+  wrapAsync(async (req, res, next) => {
+    //const userData = req.decoded.userData
     //TEMPORAL
-    const userData = req.body       
-    await saoService.teachersSinc(io,res,userData,async function(err,teacherList){
-        if(err){
-            next(new AppError(err,404))
-        }else{
-            res.status(200).json(teacherList)            
+    const userData = req.body
+    await saoService.teachersSinc(
+      io,
+      res,
+      userData,
+      async function (err, teacherList) {
+        if (err) {
+          next(new AppError(err, 404))
+        } else {
+          res.status(200).json(teacherList)
         }
-    })
+      }
+    )
+  })
+
+exports.teachersInsertUpdateDB = wrapAsync(async (req, res, next) => {
+  const { newTeachers, updatedTeachers } = req.body
+  if (
+    (newTeachers && newTeachers.length > 0) ||
+    (updatedTeachers && updatedTeachers.length > 0)
+  ) {
+    await userManagerModel.insertUpdateManyUsers(
+      newTeachers,
+      updatedTeachers,
+      async function (err, resultData) {
+        if (err) {
+          next(new AppError(err, 404))
+        } else {
+          res.status(200).json(resultData)
+        }
+      }
+    )
+  } else {
+    next(
+      new AppError('No hay datos desde Request para insertar/actualizar', 404)
+    )
+  }
 })
 
-exports.teachersInsertUpdateDB = wrapAsync(async (req,res,next)=>{
-    const {newTeachers, updatedTeachers} = req.body        
-    if((newTeachers && newTeachers.length > 0) || (updatedTeachers && updatedTeachers.length > 0)){
-        await userManagerModel.insertUpdateManyUsers(newTeachers,updatedTeachers,async function(err,resultData){
-            if(err){
-                next(new AppError(err,404))
-            }else{
-                res.status(200).json(resultData)            
-            }
-        })
-    } else {
-        next(new AppError("No hay datos desde Request para insertar/actualizar",404))
-    }
-})
-
-
-exports.students = (io) => wrapAsync(async (req,res,next)=>{
+exports.students = io =>
+  wrapAsync(async (req, res, next) => {
     //const userData = req.decoded.userData - TEMPORAL
-    const userData = req.body     
-    console.log(userData)           
-    await saoService.studentsSinc(io,res,userData,async function(err,studentList){
-        if(err){
-            next(new AppError(err,404))
-        }else{
-            res.status(200).json(studentList)            
+    const userData = req.body
+    await saoService.studentsSinc(
+      io,
+      res,
+      userData,
+      async function (err, studentList) {
+        if (err) {
+          next(new AppError(err, 404))
+        } else {
+          res.status(200).json(studentList)
         }
-    })
+      }
+    )
+  })
+
+exports.studentsInsertUpdateDB = wrapAsync(async (req, res, next) => {
+  const { newStudents, updatedStudents } = req.body
+  if (
+    (newStudents && newStudents.length > 0) ||
+    (updatedStudents && updatedStudents.length > 0)
+  ) {
+    await userManagerModel.insertUpdateManyUsers(
+      newStudents,
+      updatedStudents,
+      async function (err, resultData) {
+        if (err) {
+          next(new AppError(err, 404))
+        } else {
+          res.status(200).json(resultData)
+        }
+      }
+    )
+  } else {
+    next(
+      new AppError('No hay datos desde Request para insertar/actualizar', 404)
+    )
+  }
 })
 
-exports.studentsInsertUpdateDB = wrapAsync(async (req,res,next)=>{
-    const {newStudents, updatedStudents} = req.body        
-    if((newStudents && newStudents.length > 0) || (updatedStudents && updatedStudents.length > 0)){
-        await userManagerModel.insertUpdateManyUsers(newStudents,updatedStudents,async function(err,resultData){
-            if(err){
-                next(new AppError(err,404))
-            }else{
-                res.status(200).json(resultData)            
-            }
-        })
-    } else {
-        next(new AppError("No hay datos desde Request para insertar/actualizar",404))
-    }
-})
-
-
-exports.fct = (io) => wrapAsync(async (req,res,next)=>{
-     // Leer query "?todasFCT=true"
+exports.fct = io =>
+  wrapAsync(async (req, res, next) => {
+    // Leer query "?todasFCT=true"
     //const todasFCT = req.query.todasFCT === "true";
 
     //console.log("TODAS FCTs en Controller: ", todasFCT)
@@ -148,28 +198,33 @@ exports.fct = (io) => wrapAsync(async (req,res,next)=>{
     //TEMPORAL
     const userData = req.body
     //const {verTodasFCT = false} = req.params
-    await saoService.FCTSinc(io,res,userData,async function(err,fctList){
-        if(err){
-            next(new AppError(err,404))
-        }else{
-            console.log(fctList)
-            res.status(200).json(fctList)            
-        }
+    await saoService.FCTSinc(io, res, userData, async function (err, fctList) {
+      if (err) {
+        next(new AppError(err, 404))
+      } else {
+        console.log(fctList)
+        res.status(200).json(fctList)
+      }
     })
-})
+  })
 
-
-exports.fctsInsertUpdateDB = wrapAsync(async (req,res,next)=>{
-    const {newFCT, updatedFCT} = req.body        
-    if((newFCT && newFCT.length > 0) || (updatedFCT && updatedFCT.length > 0)){
-        await fctManagerModel.insertUpdateManyFCT(newFCT,updatedFCT,async function(err,resultData){
-            if(err){
-                next(new AppError(err,404))
-            }else{
-                res.status(200).json(resultData)            
-            }
-        })
-    } else {
-        next(new AppError("No hay datos desde Request para insertar/actualizar",404))
-    }
+exports.fctsInsertUpdateDB = wrapAsync(async (req, res, next) => {
+  const { newFCT, updatedFCT } = req.body
+  if ((newFCT && newFCT.length > 0) || (updatedFCT && updatedFCT.length > 0)) {
+    await fctManagerModel.insertUpdateManyFCT(
+      newFCT,
+      updatedFCT,
+      async function (err, resultData) {
+        if (err) {
+          next(new AppError(err, 404))
+        } else {
+          res.status(200).json(resultData)
+        }
+      }
+    )
+  } else {
+    next(
+      new AppError('No hay datos desde Request para insertar/actualizar', 404)
+    )
+  }
 })

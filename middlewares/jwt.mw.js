@@ -66,7 +66,10 @@ exports.protectSAO = (req, res, next) => {
   //TO DO
   if (!token) {
     return next(
-      new AppError('No estás autenticado. Por favor, inicia sesión con SAO FCT.', 401)
+      new AppError(
+        'No estás autenticado. Por favor, inicia sesión con SAO FCT.',
+        401
+      )
     )
   }
 
@@ -82,18 +85,25 @@ exports.protectSAO = (req, res, next) => {
   }
 }
 
-exports.createJWT = (req, res, next, userData, cookieName = 'jwt', expireTimeMs = 3600000) => {
+exports.createJWT = (
+  req,
+  res,
+  next,
+  userData,
+  cookieName = 'jwt',
+  expireTimeMs = 3600000
+) => {
   try {
     //TO DO
     const payload = {
       username: userData.username,
       profile: userData.profile,
       id: userData._id,
-      tokenType: cookieName
+      tokenType: cookieName,
     }
 
     // Convertimos milisegundos a segundos para la opción 'expiresIn' de JWT
-    const seconds = Math.floor(expireTimeMs / 1000);
+    const seconds = Math.floor(expireTimeMs / 1000)
 
     // expiración en 1 hora
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -104,8 +114,8 @@ exports.createJWT = (req, res, next, userData, cookieName = 'jwt', expireTimeMs 
     const cookieOptions = {
       expires: new Date(Date.now() + expireTimeMs), //Tiempo parametrizable
       httpOnly: true, ////No sean accesibles desde JS (document.cookie)
-      secure:true, //HTTPS
-      sameSite:"none" //Dominios distintos front y back
+      secure: true, //HTTPS
+      sameSite: 'none', //Dominios distintos front y back
     }
 
     res.cookie(cookieName, token, cookieOptions)
