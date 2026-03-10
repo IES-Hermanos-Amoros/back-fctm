@@ -6,7 +6,15 @@ const DummyModel = require('../models/dummy.model');
 
 const find = async () => {
     try {
-        return await DummyModel.find();
+        return await DummyModel.find()
+        .populate({
+            path: "FCTM_documents",
+            select: "_id FCTM_document_name FCTM_document_url FCTM_document_description FCTM_document_type"
+            })
+        .populate({
+                path: "FCTM_category",
+                select: "_id FCTM_category_name" // Solo traemos lo necesario
+            });
     } catch (err) {
         throw err;
     }
@@ -19,6 +27,10 @@ const findByFilter = async (filter) => {
             path: "FCTM_documents",
             select: "_id FCTM_document_name FCTM_document_url FCTM_document_description FCTM_document_type"
             })
+        .populate({
+                path: "FCTM_category",
+                select: "_id FCTM_category_name" // Solo traemos lo necesario
+            });
     } catch (err) {
         throw err;
     }

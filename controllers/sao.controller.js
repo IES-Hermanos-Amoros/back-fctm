@@ -34,11 +34,11 @@ exports.login = wrapAsync(async (req,res,next)=>{
                 data: modifiedObj,
                 SAOtoken: SAOtoken
             }                
-            req.session.userLogued = userLogued
-            console.log("LOGIN SESSION----------INI")            
-            console.log(req.session.userLogued)
-            console.log("saoToken", SAOtoken)
-            console.log("LOGIN SESSION----------FIN")
+            //req.session.userLogued = userLogued
+            //console.log("LOGIN SESSION----------INI")            
+            //console.log(req.session.userLogued)
+            //console.log("saoToken", SAOtoken)
+            //console.log("LOGIN SESSION----------FIN")
 
             //res.render("SAO/dashboard.ejs")
             res.status(200).json(userLogued)            

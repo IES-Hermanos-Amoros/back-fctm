@@ -112,12 +112,13 @@ exports.deleteDummyById = async (req, res) => {
 
 //LOGIN FICTICIO
 exports.loginDummy = async(req,res,next) => {
-    const { profile, username, id } = req.body;
+    const { profile, username, id, SAO_id } = req.body;
 
     // Aquí "trampeamos" el payload del usuario
     const userPayload = {
         _id: id || '12345',
         username: username || 'usuario_de_prueba',
+        SAO_id: SAO_id || 'SAO12345',
         profile: profile || 'STUDENT' // Por defecto estudiante
     };
 

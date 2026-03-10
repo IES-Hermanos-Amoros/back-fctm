@@ -24,6 +24,7 @@ const reviewRoutes = require("./routes/review.routes");
 const fctRoutes = require("./routes/fct.routes");
 const actionRoutes = require("./routes/action.routes")
 const dummyRoutes = require("./routes/dummy.routes");
+const skillRoutes = require("./routes/skill.routes");
 const enumRoutes = require("./routes/enum.routes")
 //LOGINSAOFCTM INI
 const authRoutes = require("./routes/auth.routes");
@@ -82,6 +83,8 @@ app.use(`/api/${process.env.API_VERSION}/reviews`, reviewRoutes);
 app.use(`/api/${process.env.API_VERSION}/fct`, fctRoutes);
 app.use(`/api/${process.env.API_VERSION}/actions`, actionRoutes);
 app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
+app.use(`/api/${process.env.API_VERSION}/skills`, skillRoutes);
+
 //LOGINSAOFCTM INI
 app.use(`/api/${process.env.API_VERSION}/auth`,authRoutes)
 //LOGINSAOFCTM FIN
@@ -102,13 +105,18 @@ app.use(errorHandlerMW.errorHandler);
 
 // Arrancar el servidor
 server.listen(port, async() => {
-      console.log(`Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}`);
+      console.log(`✅ Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}/api/${process.env.API_VERSION}/dummy`);
       try {
         // Conexión a MongoDB
           await mongodbConfig.conectarMongoDB();
-          console.log("Conectado con MongoDB Atlas!!!");
+          console.log("✅ Conectado con MongoDB Atlas!!!");
+          if (io.engine) {
+            console.log('✅ El servidor Socket.IO está iniciado.');
+          } else {
+            console.log('❌ El servidor Socket.IO no parece estar inicializado.');
+          }
       } catch (error) {
-          console.error("Error al iniciar el servidor o BD:", error);
+          console.error("❌ Error al iniciar el servidor o BD:", error);
           process.exit(1);
       }
 })

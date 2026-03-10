@@ -1,15 +1,33 @@
-const fctController = require("../controllers/fct.controller")
 const express = require("express")
 const router = express.Router()
 
-// GET -> Mostrar listado de fcts
-router.get("/",fctController.findAllFcts)
+const fctController = require("../controllers/fct.controller")
 
-// GET/:ID -> Mostrar detalles de un fct
-router.get("/:id",fctController.findFctById)
+const { protect } = require("../middlewares/jwt.mw")
+const { restrictTo } = require("../middlewares/profile.mw")
 
-// PUT/:ID -> Updatear un fct
-router.patch("/:id",fctController.editFct)
+// GET -> Mostrar listado de FCTs
+router.get(
+  "/",
+  protect,
+  restrictTo("ADMINISTRADOR","PROFESOR"),
+  fctController.findAllFcts
+)
 
-// Exportar rutas
+// GET -> Mostrar FCT por ID
+router.get(
+  "/:id",
+  protect,
+  restrictTo("ADMINISTRADOR","PROFESOR"),
+  fctController.findFctById
+)
+
+// PATCH -> Actualizar FCT
+router.patch(
+  "/:id",
+  protect,
+  restrictTo("ADMINISTRADOR","PROFESOR"),
+  fctController.editFct
+)
+
 module.exports = router
