@@ -1,13 +1,40 @@
-import { transporter } from "../nodemailer.config.js"
+import dotenv from "dotenv";
+dotenv.config();
 
-console.log("⏳ Verificando conexión con Brevo...");
+import { NODEMAILER_ACTIVE, transporter } from "../nodemailer.config.js";
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("❌ Error de configuración:");
-    console.error(error);
-  } else {
-    console.log("✅ ¡Todo bien! Nodemailer puede enviar correos.");
+async function testMail() {
+
+  try {
+
+    console.log("⏳ Verificando conexión con Brevo...");
+    await transporter.verify();
+    console.log("✅ Nodemailer puede enviar correos");
+
+    console.log("⏳ Enviando correo de prueba...");
+
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM || '"FCT Manager - IES Hermanos Amorós" <sanchez.migben@gmail.com>',
+      to: "ma.sanchezbenito@edu.gva.es",
+      subject: "TEST",
+      text: "Hola mundo"
+    });
+
+    console.log("✅ Email enviado:", info.messageId);
+
+  } catch (error) {
+
+    console.error("❌ Error:", error);
+
   }
-  process.exit(); // Detiene el script tras la respuesta
-});
+
+  process.exit();
+
+}
+
+if(NODEMAILER_ACTIVE) {
+  testMail();
+} else {
+  console.warn("⚠️ Nodemailer is disabled. Set NODEMAILER_ACTIVE=1 to enable it.");
+  process.exit();
+}

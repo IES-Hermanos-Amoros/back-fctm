@@ -1,4 +1,5 @@
 //LOGINSAOFCTM INI
+const userManager = require("../models/userManager.model");
 const authService = require("../services/auth.service");
 const {wrapAsync} = require("../utils/functions");
 const AppError = require("../utils/AppError");
@@ -66,15 +67,22 @@ exports.completeFirstLogin = wrapAsync(async (req, res, next) => {
         email
     );
 
+
      //Todo ha ido correcto, creamos el token, guardándolo en cookie "jwt" como httpOnly
-    result.token = createJWT(req,res,next,result.user)
+    //result.token = createJWT(req,res,next,result.user)
 
 
-    res.status(200).json({
+    /*res.status(200).json({
         status: "SUCCESS",
         token: result.token,
         user: result.user
-    });
+    });*/
+
+    res.status(200).json({
+        status: result.mode,
+        token: result.token,
+        user: result.user
+    })
 
 });
 
@@ -112,6 +120,21 @@ exports.registerFromSAO = wrapAsync(async (req, res, next) => {
 
 });
 
+//Logout
+exports.logout = wrapAsync(async (req, res, next) => {
+    // Borramos la cookie 'jwt'
+    res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: true, // Mantener igual que cuando se creó
+        sameSite: "none"
+    });
+
+    res.status(200).json({
+        status: "SUCCESS",
+        message: "Sesión cerrada correctamente y cookie eliminada"
+    });
+});
+
 
 
 
@@ -126,4 +149,36 @@ exports.getLoguedUser = (req,res,next) => {
   });
 
 }
+
+
+
+exports.verifyEmail = wrapAsync(async (req,res,next) => {
+
+    console.log("Verificando email con token:", req.params.token);
+
+  const { token } = req.params;
+
+  const user = await userManager.findOne({
+    FCTM_email_verification_token: token,
+    FCTM_email_verification_expires: { $gt: Date.now() }
+  });
+
+  console.log("Usuario encontrado para verificación:", user ? user._id : "Ninguno");
+
+  if(!user){
+    return next(new AppError("Token inválido o expirado",400));
+  }
+
+  user.FCTM_email_verified = true;
+  user.FCTM_email_verification_token = undefined;
+  user.FCTM_email_verification_expires = undefined;
+
+  await user.save();
+
+  res.status(200).json({
+    status:"EMAIL_VERIFIED",
+    message:"Correo verificado correctamente. Ya puedes iniciar sesión."
+  });
+
+});
 //LOGINSAOFCTM FIN

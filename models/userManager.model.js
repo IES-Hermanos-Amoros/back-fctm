@@ -86,11 +86,21 @@ const userManagerSchema = new mongoose.Schema({
         trim: true,
         lowercase: true,
         default: null,
+        unique: true, //Sólo puede existir un email de contacto por usuario
         validate: {
             validator: validator.isEmail,
             message: "El email introducido no es válido"
         }
     },
+
+    FCTM_email_verified: {
+    type: Boolean,
+    default: false
+    },
+
+    FCTM_email_verification_token: String,
+
+    FCTM_email_verification_expires: Date,
     //LOGINSAOFCTM FIN
 
     //RELACIONES con OTROS MODELOS

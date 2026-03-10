@@ -13,7 +13,8 @@ exports.getById = async (id) => {
         .populate({
             path: "FCTM_job_offers",
             // Seleccionamos los campos exactos que necesita tu tabla en el frontend
-            select: "FCTM_job_title FCTM_job_start_date FCTM_job_end_date FCTM_job_status"
+            select: "FCTM_job_title FCTM_job_start_date FCTM_job_end_date FCTM_job_status FCTM_inserted_date",
+            options: { sort: { FCTM_inserted_date: -1 } }
         });
 }
 

@@ -1,3 +1,5 @@
+const actionController = require("../controllers/action.controller")
+const { upload, validateAndScanFiles } = require("../middlewares/upload.middleware")
 const express = require("express")
 const router = express.Router()
 
@@ -15,14 +17,8 @@ router.get(
   actionController.getAllActions
 )
 
-// Crear una acción
-router.post(
-  "/",
-  protect,
-  restrictTo("ADMINISTRADOR","PROFESOR"),
-  upload.array("files",10),
-  actionController.newAction
-)
+//crear una accion
+router.post("/",protect,restrictTo("ADMINISTRADOR","PROFESOR"), upload.array("files",10), validateAndScanFiles, actionController.newAction)
 
 // Mostrar acción por ID
 router.get(
