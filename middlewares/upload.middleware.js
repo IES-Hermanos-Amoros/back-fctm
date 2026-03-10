@@ -2,7 +2,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { fileTypeFromFile } = require("file-type");
-const clamscan = require("../utils/clam-scan");
+const {CLAMSCAN_ACTIVE, clamscan} = require("../utils/clam-scan");
 
 // Ruta de almacenamiento
 const uploadPath = path.join(__dirname, "../uploads");
@@ -56,13 +56,15 @@ const validateAndScanFiles = async (req, res, next) => {
                 });
             }
 
-            const { isInfected, viruses } = await clamscan.then(c => c.scanFile(filePath));
-            if (isInfected) {
-                fs.unlinkSync(filePath);
-                return res.status(400).json({
-                    error: `Archivo infectado detectado: ${file.originalname}`,
-                    viruses
-                });
+            if (CLAMSCAN_ACTIVE) {
+                const { isInfected, viruses } = await clamscan.then(c => c.scanFile(filePath));
+                if (isInfected) {
+                    fs.unlinkSync(filePath);
+                    return res.status(400).json({
+                        error: `Archivo infectado detectado: ${file.originalname}`,
+                        viruses
+                    });
+                }
             }
         }
 

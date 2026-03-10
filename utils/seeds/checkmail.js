@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { transporter } from "../nodemailer.config.js";
+import { NODEMAILER_ACTIVE, transporter } from "../nodemailer.config.js";
 
 async function testMail() {
 
@@ -32,4 +32,9 @@ async function testMail() {
 
 }
 
-testMail();
+if(NODEMAILER_ACTIVE) {
+  testMail();
+} else {
+  console.warn("⚠️ Nodemailer is disabled. Set NODEMAILER_ACTIVE=1 to enable it.");
+  process.exit();
+}

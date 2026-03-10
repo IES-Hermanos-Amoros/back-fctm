@@ -1,11 +1,13 @@
 //LOGINSAOFCTM INI
 require("dotenv").config();
 const {hashPassword,compareLogin} = require("../utils/bcrypt")
-const jwt = require("jsonwebtoken");
+//const jwt = require("jsonwebtoken");
 const userManager = require("../models/userManager.model");
 const AppError = require("../utils/AppError");
-const { transporter } = require("../utils/nodemailer.config");
+const { NODEMAILER_ACTIVE, transporter } = require("../utils/nodemailer.config");
 const crypto = require("crypto");
+const logger = require("../utils/logger");
+
 
 const validateStrongPassword = (password) => {
   const strongPasswordRegex =
@@ -14,20 +16,6 @@ const validateStrongPassword = (password) => {
   return strongPasswordRegex.test(password);
 };
 
-// 🔐 Generar JWT
-// PENDIENTE --> Sustituir por createToken en jwt.mw.js
-/*const signToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id,
-      profile: user.SAO_profile
-    },
-    process.env.JWT_SECRET || "contraseñasupersecretaJWT",
-    {
-      expiresIn: process.env.JWT_EXPIRES_IN || "1d"
-    }
-  );
-};*/
 
 // 🟢 LOGIN PRINCIPAL
 exports.login = async ({ username, password }) => {
@@ -134,20 +122,26 @@ exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) 
   const verificationLink = `${process.env.USE_HTTPS === "1" ? "https" : "http"}${process.env.FRONTEND_URL}/verify-email/${emailToken}`;
   //const verificationLink = "https://localhost:3016/api/v2/auth/verify-email/" + emailToken;
 
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM || '"FCT Manager - IES Hermanos Amorós" <sanchez.migben@gmail.com>',
-    to: email,
-    subject: "Verifica tu correo",
-    html: `
-      <h2>Verifica tu cuenta</h2>
-      <p>Haz click en el siguiente enlace:</p>
-      <a href="${verificationLink}">
-        Verificar correo
-      </a>
-    `
-  });
+  if(NODEMAILER_ACTIVE) {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || '"FCT Manager - IES Hermanos Amorós" <sanchez.migben@gmail.com>',
+      to: email,
+      subject: "Verifica tu correo",
+      html: `
+        <h2>Verifica tu cuenta</h2>
+        <p>Haz click en el siguiente enlace:</p>
+        <a href="${verificationLink}">
+          Verificar correo
+        </a>
+      `
+    });
 
-  console.log(`Correo de verificación enviado a ${email} con link: ${verificationLink}`);
+    console.log(`✅ Correo de verificación enviado a ${email} con link: ${verificationLink}`);
+  } else {
+    console.warn("⚠️ Nodemailer is disabled. Set NODEMAILER_ACTIVE=1 to enable it.");
+    logger.access.info(`⚠️ Simulación: Correo de verificación para ${email} con link: ${verificationLink}`);
+    console.log(`⚠️ Simulación: Correo de verificación para ${email} con link: ${verificationLink}`);
+  }
 
   return {
     token:"",
