@@ -120,6 +120,21 @@ exports.registerFromSAO = wrapAsync(async (req, res, next) => {
 
 });
 
+//Logout
+exports.logout = wrapAsync(async (req, res, next) => {
+    // Borramos la cookie 'jwt'
+    res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: true, // Mantener igual que cuando se creó
+        sameSite: "none"
+    });
+
+    res.status(200).json({
+        status: "SUCCESS",
+        message: "Sesión cerrada correctamente y cookie eliminada"
+    });
+});
+
 
 
 
