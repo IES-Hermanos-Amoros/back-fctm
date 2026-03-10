@@ -3,9 +3,6 @@ const { upload, validateAndScanFiles } = require("../middlewares/upload.middlewa
 const express = require("express")
 const router = express.Router()
 
-const actionController = require("../controllers/action.controller")
-const upload = require("../middlewares/upload.middleware")
-
 const { protect } = require("../middlewares/jwt.mw")
 const { restrictTo } = require("../middlewares/profile.mw")
 
