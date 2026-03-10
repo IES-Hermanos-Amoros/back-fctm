@@ -105,7 +105,7 @@ app.use(errorHandlerMW.errorHandler);
 
 // Arrancar el servidor
 server.listen(port, async() => {
-      console.log(`✅ Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}`);
+      console.log(`✅ Servidor ${serverState.type} levantado en ${serverState.type}://localhost:${port}/api/${process.env.API_VERSION}/dummy`);
       try {
         // Conexión a MongoDB
           await mongodbConfig.conectarMongoDB();
