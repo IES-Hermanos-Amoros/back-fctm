@@ -26,7 +26,8 @@ exports.postJobOffer = wrapAsync(async (req, res, next) => {
         const newOffer = await jobOfferService.createJobOffer(req.body)
         res.status(200).json(newOffer)
     } catch (error) {
-        next(new AppError("Error al crear oferta",500))
+        //next(new AppError(error,500))
+        next(error)
     }
 })
 

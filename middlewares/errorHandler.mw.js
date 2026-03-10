@@ -151,6 +151,9 @@ const sendErrorProd = (err, res) => {
 
 // Middleware de manejo de errores global
 exports.errorHandler = (err, req, res, next) => {
+
+  console.log("Err: ", err)
+
   err.status = err.status || 500
   err.message = err.message || 'ERROR GENERAL'
 
