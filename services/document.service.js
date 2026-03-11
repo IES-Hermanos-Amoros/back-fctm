@@ -2,6 +2,7 @@ const documentModel = require('../models/documentManager.model')
 const mongoose = require('mongoose')
 const ActionManager = require("../models/actionManager.model"); // Importante para el populate
 const userManager = require("../models/userManager.model");    // Importante para la búsqueda de usuarios
+const jobOfferManager = require("../models/jobOfferManager.model") // Importante para actualizar ofertas de empleo
 
 //devolver documentos
 exports.getAll = async() => //documentModel.find()
@@ -118,6 +119,16 @@ exports.insertManyDocuments = async (files, datos) => {
 
       await userManager.updateOne(
         { _id: datos.userId },
+        { $push: { FCTM_documents: { $each: docIds } } }
+      )
+    }
+
+     //si hay userId, actualizar lista de documentos
+    if (datos.jobOfferId) {
+      const docIds = insertedDocs.map(doc => doc._id)
+
+      await jobOfferManager.updateOne(
+        { _id: datos.jobOfferId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }
