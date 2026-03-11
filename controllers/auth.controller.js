@@ -131,6 +131,13 @@ exports.logout = wrapAsync(async (req, res, next) => {
         secure: true, // Mantener igual que cuando se creó
         sameSite: "none"
     });
+    
+    // Borramos la cookie 'SAOtoken' 
+    res.clearCookie("SAOtoken", {
+        httpOnly: true,
+        secure: true, // Mantener igual que cuando se creó
+        sameSite: "none"
+    });
 
     res.status(200).json({
         status: "SUCCESS",
