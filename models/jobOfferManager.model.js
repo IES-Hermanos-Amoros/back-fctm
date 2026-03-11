@@ -76,6 +76,19 @@ jobOfferSchema.pre("save", function (next) {
     next();
 });
 
+jobOfferSchema.virtual("empresa", {
+    ref: "UserManager",           // El modelo donde buscar
+    localField: "_id",            // El ID de la oferta
+    foreignField: "FCTM_job_offers", // El campo en UserManager que contiene el array de IDs
+    justOne: true                 // Queremos el objeto de la empresa, no un array
+});
+
+
+// 🔥 Para que el virtual llegue al frontend
+jobOfferSchema.set("toJSON", { virtuals: true });
+jobOfferSchema.set("toObject", { virtuals: true });
+
+
 const JobOfferManager = mongoose.model("JobOfferManager", jobOfferSchema);
 
 module.exports = JobOfferManager;
