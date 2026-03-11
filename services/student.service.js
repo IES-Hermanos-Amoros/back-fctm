@@ -19,7 +19,14 @@ exports.findById = async (id) => {
     const student = await userManager.findOne({
       _id: id,
       SAO_profile: "ALUMNO",
+    })
+    .populate({
+      path: 'FCTM_documents',
+      select: 'FCTM_document_name FCTM_document_type FCTM_document_url FCTM_inserted_date',
+      options: { sort: { FCTM_inserted_date: -1 } }
     });
+
+    console.log("Alumno encontrado:", student);
 
     return student;
   } catch (error) {
