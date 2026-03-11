@@ -81,11 +81,18 @@ exports.login = async ({ username, password }) => {
 };
 
 //Terminar la configuración del usuario
-exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email) => {
+exports.completeFirstLogin = async (userId, newPassword, newPasswordRep, email, emailRep) => {
 
   if(newPassword != newPasswordRep){
     throw new AppError(
       "Las contraseñas no coinciden",
+      400
+    );
+  }
+
+  if(email != emailRep){
+    throw new AppError(
+      "Los emails no coinciden",
       400
     );
   }

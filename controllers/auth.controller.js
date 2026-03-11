@@ -54,17 +54,18 @@ exports.login = wrapAsync(async (req, res, next) => {
 // 🔄 COMPLETAR PRIMER LOGIN
 exports.completeFirstLogin = wrapAsync(async (req, res, next) => {
 
-    const { userId, newPassword, newPasswordRep, email } = req.body;
+    const { userId, newPassword, newPasswordRep, email, emailRep } = req.body;
 
-    if (!userId || !newPassword || !newPasswordRep || !email) {
-        return next(new AppError("Faltan datos (userId, newPassword, newPasswordRep, email)", 400));
+    if (!userId || !newPassword || !newPasswordRep || !email || !emailRep) {
+        return next(new AppError("Faltan datos (userId, newPassword, newPasswordRep, email, emailRep)", 400));
     }
 
     const result = await authService.completeFirstLogin(
         userId,
         newPassword,
         newPasswordRep,
-        email
+        email,
+        emailRep
     );
 
 
