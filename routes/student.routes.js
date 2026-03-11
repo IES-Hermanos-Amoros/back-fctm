@@ -1,17 +1,14 @@
-// Rutas de Student
-const studentController = require('../controllers/student.controller')
-const express = require('express') //npm i express
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
+const studentController = require('../controllers/student.controller');
+const { protect } = require('../middlewares/jwt.mw');
+const { restrictTo } = require('../middlewares/profile.mw');
+const { isSelf } = require('../middlewares/isSelf.mw');
 
-// GET - obtener todos los alumnos
-router.get('/', studentController.getAllStudents)
+router.get('/', protect, restrictTo("ADMIN", "TEACHER", "COMPANY"), studentController.getAllStudents);
 
-// GET/:id - obtener alumno por id
-router.get('/:id', studentController.getStudentById)
+router.get('/:id', protect, isSelf("ADMIN", "TEACHER", "COMPANY", "id"), studentController.getStudentById);
 
-// PUT/:id - actualizar alumno por id
-router.patch('/:id', studentController.updateStudentFctm)
+router.patch('/:id', protect, isSelf("ADMIN", "TEACHER", "id"), studentController.updateStudentFctm);
 
-// Exportar rutas
-module.exports = router
-
+module.exports = router;

@@ -1,15 +1,14 @@
-const teacherController = require("../controllers/teacher.controller")
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
+const teacherController = require("../controllers/teacher.controller");
+const { protect } = require("../middlewares/jwt.mw");
+const { restrictTo } = require("../middlewares/profile.mw");
+const { isSelf } = require("../middlewares/isSelf.mw");
 
-// GET -> Mostrar listado de teachers
-router.get("/",teacherController.findAllTeachers)
+router.get("/", protect, restrictTo("ADMIN", "TEACHER"), teacherController.findAllTeachers);
 
-// GET/:ID -> Mostrar detalles de un teacher
-router.get("/:id",teacherController.findTeacherById)
+router.get("/:id", protect, restrictTo("ADMIN", "TEACHER"), teacherController.findTeacherById);
 
-// PUT -> Updatear un teacher
-router.patch("/:id",teacherController.editTeacher)
+router.patch("/:id", protect, isSelf("ADMIN", "id"), teacherController.editTeacher);
 
-// Exportar rutas
-module.exports = router
+module.exports = router;
