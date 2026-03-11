@@ -27,6 +27,7 @@ router.post(
   reviewController.createReview,
 );
 
+//Logueado y ser admin, teacher o student (el que creó la reseña... el owner)
 router.patch(
   "/:id",
   protect,
@@ -34,6 +35,7 @@ router.patch(
   reviewController.editReviewById,
 );
 
+//Logueado y ser admin, teacher o student (el que creó la reseña... el owner)
 router.delete(
   "/:id",
   protect,

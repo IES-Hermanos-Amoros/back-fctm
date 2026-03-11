@@ -10,7 +10,7 @@ const { restrictTo } = require("../middlewares/profile.mw")
 router.get(
   "/",
   protect,
-  restrictTo("ADMINISTRADOR","PROFESOR"),
+  //restrictTo("ADMINISTRADOR","PROFESOR"), --> De cara al sprint 5 
   fctController.findAllFcts
 )
 
@@ -18,7 +18,7 @@ router.get(
 router.get(
   "/:id",
   protect,
-  restrictTo("ADMINISTRADOR","PROFESOR"),
+  //restrictTo("ADMINISTRADOR","PROFESOR"), --> De cara al sprint 5 
   fctController.findFctById
 )
 

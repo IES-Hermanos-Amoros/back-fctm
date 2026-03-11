@@ -5,10 +5,12 @@ const { protect } = require('../middlewares/jwt.mw');
 const { restrictTo } = require('../middlewares/profile.mw');
 const { isSelf } = require('../middlewares/isSelf.mw');
 
-router.get('/', protect, restrictTo("ADMIN", "TEACHER", "COMPANY"), studentController.getAllStudents);
+router.get('/', protect, restrictTo("ADMINISTRADOR", "PROFESOR", "EMPRESA"), studentController.getAllStudents);
 
-router.get('/:id', protect, isSelf("ADMIN", "TEACHER", "COMPANY", "id"), studentController.getStudentById);
+//Logueado y ser admin, teacher, company o student propio (un student no puede acceder a los detalles de otros students)
+router.get('/:id', protect, isSelf(["ADMINISTRADOR", "PROFESOR", "EMPRESA"], "id"), studentController.getStudentById);
 
-router.patch('/:id', protect, isSelf("ADMIN", "TEACHER", "id"), studentController.updateStudentFctm);
+//Logueado y ser admin, teacher o student propio (un student no puede modfiicar los detalles de otros students) (una empresa tampoco podrá modificar el perfil de un estudiante)
+router.patch('/:id', protect, isSelf(["ADMINISTRADOR", "PROFESOR"], "id"), studentController.updateStudentFctm);
 
 module.exports = router;

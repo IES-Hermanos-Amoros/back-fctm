@@ -34,6 +34,7 @@ router.get("/:id", jwt.protect, profile.restrictTo("ADMINISTRADOR", "PROFESOR"),
 router.patch("/:id", jwt.protect, profile.restrictTo("ADMINISTRADOR", "PROFESOR"), documentController.editDocumentById)
 
 //DELETE - Borrar un Documento
+//Logueado y ser admin, teacher o el alumno que ha creado el documento (owner)
 router.delete("/:id", jwt.protect, isOwnerMW.isOwner(DocumentManager, "FCTM_document_created_by", ["ADMINISTRADOR", "PROFESOR"]), documentController.deleteDocumentById)
 
 module.exports = router
