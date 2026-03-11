@@ -1,15 +1,44 @@
-const reviewController = require("../controllers/review.controller")
-const express = require("express")
-const router = express.Router()
+const reviewController = require("../controllers/review.controller");
+const express = require("express");
+const router = express.Router();
+const { protect } = require("../middlewares/jwt.mw.js");
+const { restrictTo } = require("../middlewares/profile.mw.js");
+const { isOwner } = require("../middlewares/isOwner.mw.js");
+const ReviewManager = require("../models/reviewManager.model.js");
 
-router.get("/", reviewController.getAllReviews)
+router.get(
+  "/",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR", "ALUMNO"),
+  reviewController.getAllReviews,
+);
 
-router.get("/:id", reviewController.getReviewById)
+router.get(
+  "/:id",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR", "ALUMNO"),
+  reviewController.getReviewById,
+);
 
-router.post("/", reviewController.createReview)
+router.post(
+  "/",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR", "ALUMNO"),
+  reviewController.createReview,
+);
 
-router.patch("/:id", reviewController.editReviewById)
+router.patch(
+  "/:id",
+  protect,
+  isOwner(ReviewManager, "FCTM_user_id", ["ADMINISTRADOR", "PROFESOR"]),
+  reviewController.editReviewById,
+);
 
-router.delete("/:id", reviewController.deleteReviewById)
+router.delete(
+  "/:id",
+  protect,
+  isOwner(ReviewManager, "FCTM_user_id", ["ADMINISTRADOR", "PROFESOR"]),
+  reviewController.deleteReviewById,
+);
 
-module.exports = router
+module.exports = router;
