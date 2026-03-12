@@ -42,7 +42,7 @@ exports.login = async ({ username, password }) => {
       mode: "SAO_LOGIN",
       userId: user._id,
       SAO_id: user.SAO_id,
-      message: "Debe autenticarse mediante SAO y actualizar contraseña y verificar su email de contacto"
+      message: "USUARIO PENDIENTE DE COMPLETAR REGISTRO. A continuación se realizará una autenticación mediante SAO, con las credenciales facilitadas, para completar el registro (contraseña e email de contacto)"
     };
   }
 
@@ -218,6 +218,7 @@ exports.changePassword = async (
 // 🆕 REGISTRAR USUARIO DESDE SAO
 exports.registerFromSAO = async (saoData) => {
 
+  console.log("Intentando registrar usuario desde SAO con datos: ", saoData)
   if (!saoData || !saoData.SAO_username) {
     throw new AppError("Datos SAO inválidos", 400);
   }
@@ -235,7 +236,7 @@ exports.registerFromSAO = async (saoData) => {
     ...saoData,            // ← TODOS los campos SAO (incluidos null)
 
     // 🔐 Campos propios FCTM
-    FCTM_contact_email: saoData.SAO_email || null, //JERO --> Por defecto, el email de contacto se inicializa con el email de SAO (si existe). Luego el usuario podrá cambiarlo en su perfil.
+    //FCTM_contact_email: saoData.SAO_email || null, //JERO --> Por defecto, el email de contacto se inicializa con el email de SAO (si existe). Luego el usuario podrá cambiarlo en su perfil.
     FCTM_password: null,
     FCTM_firstLogin: true
   };

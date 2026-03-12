@@ -562,7 +562,8 @@ exports.loginService = async(userData,result) => {
         result(null,resBack)
     } else {
         //ERROR DE LOGIN
-        result(respLogin.error,null)
+        console.log("Error de Login: ", respLogin.error)
+        result("Fallo en el Login de SAO FCT: " + respLogin.error + ". Por favor, asegúrese de que sus credenciales de SAO son correctas.", null)
     }     
 }
 
