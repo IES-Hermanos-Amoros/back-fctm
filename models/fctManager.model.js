@@ -34,6 +34,13 @@ const fctManagerSchema = new Schema({
     // Campos nuevos personalizados
     FCTM_notes: { type: String },
     FCTM_ies_instructor: { type: String },
+
+    FCTM_reviews: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ReviewManager", // Relación con las reseñas
+        default: []
+    }],
+
     FCTM_inserted_date: { type: Date, default: Date.now },
     FCTM_updated_date: { type: Date, default: Date.now }
 });
