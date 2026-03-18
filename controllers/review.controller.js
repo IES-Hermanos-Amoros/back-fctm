@@ -1,9 +1,18 @@
 const reviewService = require('../services/review.service')
 const { wrapAsync } = require('../utils/functions')
 
-exports.getAllReviews = wrapAsync(async (req,res) => {
+exports.getAllVerifiedReviews = wrapAsync(async (req,res) => {
   try {
-    const reviews = await reviewService.getAll()
+    const reviews = await reviewService.getAll(true)
+    res.status(200).json(reviews)
+  } catch (error) {
+    next(new AppError("Error al obtener todas las reseñas",500))
+  }
+})
+
+exports.getAllNotVerifiedReviews = wrapAsync(async (req,res) => {
+  try {
+    const reviews = await reviewService.getAll(false)
     res.status(200).json(reviews)
   } catch (error) {
     next(new AppError("Error al obtener todas las reseñas",500))

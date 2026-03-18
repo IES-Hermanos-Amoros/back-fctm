@@ -13,3 +13,10 @@ exports.compareLogin = async(cadenaTextoPlano, cadenaCodificada) => {
     }
 }
 
+exports.validateStrongPassword = (password) => {
+  const strongPasswordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._\-#])[A-Za-z\d@$!%*?&._\-#]{8,}$/;
+
+  return strongPasswordRegex.test(password);
+};
+

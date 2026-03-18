@@ -21,6 +21,15 @@ exports.getAll = async() => //documentModel.find()
         model: "UserManager",
         select: "SAO_name SAO_profile SAO_email SAO_phone"
     })
+    .populate({
+        path: "oferta_relacionada",
+        select: "FCTM_job_title FCTM_job_status",
+        // Si quieres saber qué empresa publicó esa oferta, puedes anidar:
+        populate: {
+            path: "empresa",
+            select: "SAO_name"
+        }
+    })
     .lean()
 
     const actionIds = documents.flatMap(doc => doc.acciones_relacionadas.map(a => a._id))

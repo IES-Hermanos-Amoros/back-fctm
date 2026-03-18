@@ -1,4 +1,5 @@
 const userManagerModel = require("../models/userManager.model")
+const { compareLogin, hashPassword,validateStrongPassword } = require('../utils/bcrypt');
 require("../models/categoryManager.model");
 
 exports.getAll = async () => {
@@ -18,6 +19,7 @@ exports.getById = async (id) => {
         });
 }
 
+/*
 exports.update = async (id,datos) => {
     console.log({
         id, datos
@@ -41,4 +43,48 @@ exports.update = async (id,datos) => {
     }
 
     return await userManagerModel.findByIdAndUpdate(id, updateFields, { new:true })
-}
+}*/
+
+exports.update = async (id, datos) => {
+  // 1. Extraemos contraseñas y el resto
+  const { password, newPassword, ...otherData } = datos;
+  const keys = Object.keys(otherData);
+
+  // 2. Validación de seguridad: Bloquear cualquier campo que empiece por SAO_
+  const tieneSAO = keys.some(key => key.startsWith("SAO_"));
+  if (tieneSAO) {
+    return "ERR_SAO";
+  }
+
+  // 3. Buscamos la empresa (userManagerModel) con el hash de la contraseña
+  // Nota: Asegúrate de filtrar por el perfil adecuado si es necesario
+  const company = await userManagerModel.findById(id).select('+FCTM_password');
+
+  if (!company) {
+    return null; // O throw new Error('Empresa no encontrada') según prefieras
+  }
+
+  // 4. Lógica de cambio de contraseña
+  if (password && newPassword) {
+    const isMatch = await compareLogin(password, company.FCTM_password);
+    if (!isMatch) {
+      // Puedes retornar un código de error específico o lanzar una excepción
+      throw new Error('La contraseña actual es incorrecta');
+    }
+    if(!validateStrongPassword(newPassword)){
+      throw new Error('La nueva contraseña no cumple con los requisitos de seguridad');
+    }
+    company.password = await hashPassword(newPassword);
+  }
+
+  // 5. Mapeo de campos permitidos (solo los que empiezan por FCTM_)
+  keys.forEach(key => {
+    if (key.startsWith("FCTM_")) {
+      company[key] = otherData[key];
+    }
+  });
+
+  // 6. Guardamos los cambios usando .save()
+  // Esto devuelve el documento actualizado
+  return await company.save();
+};

@@ -5,12 +5,20 @@ const { protect } = require("../middlewares/jwt.mw.js");
 const { restrictTo } = require("../middlewares/profile.mw.js");
 const { isOwner } = require("../middlewares/isOwner.mw.js");
 const ReviewManager = require("../models/reviewManager.model.js");
+const { ro } = require("date-fns/locale");
 
 router.get(
   "/",
   protect,
   restrictTo("ADMINISTRADOR", "PROFESOR", "ALUMNO"),
-  reviewController.getAllReviews,
+  reviewController.getAllVerifiedReviews,
+);
+
+router.get(
+  "/unverified",
+  protect,
+  restrictTo("ADMINISTRADOR","PROFESOR"),
+  reviewController.getAllNotVerifiedReviews,
 );
 
 router.get(

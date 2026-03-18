@@ -13,7 +13,11 @@ exports.getAllJobOffer = async () => {
 }
 
 //Devolver una oferta de trabajo por ID
-exports.getJobOfferById = async (id) => await jobOfferModel.findById(id)//.populate("DocumentManager", "FCTM_document_name")
+exports.getJobOfferById = async (id) => await jobOfferModel.findById(id).populate({
+        path: "empresa",
+        // Usamos los nombres de campos de tu modelo UserManager
+        select: "SAO_name SAO_organization SAO_company_city" 
+    })//.populate("DocumentManager", "FCTM_document_name")
 
 //Crear una nueva oferta de trabajo
 exports.createJobOffer = async (data) => {
@@ -35,7 +39,11 @@ exports.createJobOffer = async (data) => {
 
 //Edita una oferta de trabajo existente
 exports.updateJobOffer = async (id, data) => {
-    return await jobOfferModel.findByIdAndUpdate(id, data, {new:true})
+    return await jobOfferModel.findByIdAndUpdate(id, data, {new:true}).populate({
+        path: "empresa",
+        // Usamos los nombres de campos de tu modelo UserManager
+        select: "SAO_name SAO_organization SAO_company_city" 
+    })
 }
 
 //Elimina una oferta de trabajo

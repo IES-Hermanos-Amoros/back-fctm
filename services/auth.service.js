@@ -1,6 +1,6 @@
 //LOGINSAOFCTM INI
 require("dotenv").config();
-const {hashPassword,compareLogin} = require("../utils/bcrypt")
+const {hashPassword,compareLogin,validateStrongPassword} = require("../utils/bcrypt")
 //const jwt = require("jsonwebtoken");
 const userManager = require("../models/userManager.model");
 const AppError = require("../utils/AppError");
@@ -8,13 +8,14 @@ const { NODEMAILER_ACTIVE, transporter } = require("../utils/nodemailer.config")
 const crypto = require("crypto");
 const logger = require("../utils/logger");
 
-
+/*
 const validateStrongPassword = (password) => {
   const strongPasswordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._\-#])[A-Za-z\d@$!%*?&._\-#]{8,}$/;
 
   return strongPasswordRegex.test(password);
 };
+*/
 
 
 // 🟢 LOGIN PRINCIPAL

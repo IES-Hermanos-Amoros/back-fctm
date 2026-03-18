@@ -128,8 +128,8 @@ const sendErrorDev = (err, res) => {
   logger.error.error(`Error Handler(${err.status}): ${err.message}`)
   res.status(err.status).json({
     err: err.message,
-    stack: err.stack,
-    error: err,
+    //stack: err.stack,
+    //error: err,
   })
 }
 
@@ -203,8 +203,9 @@ exports.errorHandler = (err, req, res, next) => {
     error = { ...error, ...handleBcryptError(), isOperational: true }
 
   console.log(`Error capturado por el middleware de manejo de errores: ${error.message} (Status: ${error.status})`)
+  console.log("Entorno", process.env.NODE_ENV)
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'development') {
     sendErrorDev(error, res)
   } else {
     // En producción no se quiere mostrar seguimientos de pila ni objetos de error detallados.

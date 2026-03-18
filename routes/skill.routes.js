@@ -1,4 +1,6 @@
 const skillController = require("../controllers/skill.controller");
+const { protect } = require("../middlewares/jwt.mw.js");
+const { restrictTo } = require("../middlewares/profile.mw.js");
 const express = require("express");
 const router = express.Router();
 
@@ -7,7 +9,9 @@ const router = express.Router();
 router.get("/search", skillController.searchSkills);
 
 // Obtener todas las aptitudes (Filtradas por verificadas en el servicio)
-router.get("/", skillController.getAllSkills);
+router.get("/", skillController.getAllVerifiedSkills);
+// Obtener todas las aptitudes no verificadas (para admin)
+router.get("/unverified",protect, restrictTo("ADMINISTRADOR","PROFESOR"), skillController.getAllNotVerifiedSkills);
 
 // Obtener una aptitud específica por ID
 router.get("/:id", skillController.getSkillById);

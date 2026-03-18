@@ -74,6 +74,17 @@ documentSchema.virtual("usuarios_relacionados", {
     foreignField: "FCTM_documents",
 });
 
+// 🔥 Virtual: Ofertas de trabajo que contienen este documento
+documentSchema.virtual("oferta_relacionada", {
+    ref: "JobOfferManager",       // Modelo donde buscar
+    localField: "_id",            // El ID del documento actual
+    foreignField: "FCTM_documents", // El campo en JobOffer que es un array de IDs de documentos
+   // justOne: true                 // Normalmente un documento pertenece a una sola oferta
+});
+
+// Asegúrate de tener esto (si no lo tienes ya) para que los virtuales se vean:
+documentSchema.set("toJSON", { virtuals: true });
+documentSchema.set("toObject", { virtuals: true });
 
 const DocumentManager = mongoose.model("DocumentManager", documentSchema);
 

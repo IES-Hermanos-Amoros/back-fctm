@@ -73,7 +73,8 @@ const userManagerSchema = new mongoose.Schema({
     //LOGINSAOFCTM INI
     FCTM_password: {
         type: String,
-        default: null
+        default: null,
+        select: false // No se devuelve por defecto en las consultas
     },
 
     FCTM_firstLogin: {

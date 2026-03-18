@@ -2,9 +2,18 @@ const skillService = require('../services/skill.service');
 const { wrapAsync } = require('../utils/functions');
 const AppError = require('../utils/AppError'); // Asumiendo que esta es la ruta de tu clase AppError
 
-exports.getAllSkills = wrapAsync(async (req, res, next) => {
+exports.getAllVerifiedSkills = wrapAsync(async (req, res, next) => {
     try {
-        const skills = await skillService.getAll();
+        const skills = await skillService.getAll(true);
+        res.status(200).json(skills);
+    } catch (error) {
+        next(new AppError("Error al obtener todas las aptitudes", 500));
+    }
+});
+
+exports.getAllNotVerifiedSkills = wrapAsync(async (req, res, next) => {
+    try {
+        const skills = await skillService.getAll(false);
         res.status(200).json(skills);
     } catch (error) {
         next(new AppError("Error al obtener todas las aptitudes", 500));
