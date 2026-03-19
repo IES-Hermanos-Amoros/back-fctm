@@ -144,6 +144,22 @@ const update = async (id, data) => {
   }
 };
 
+// En dummy.service.js
+const bulkUpdate = async (ids, updateFields) => {
+    try {
+        // Añadimos la fecha de actualización automáticamente
+        updateFields.FCTM_updated_date = new Date();
+
+        // updateMany es 10 veces más rápido que bulkWrite para este caso
+        return await DummyModel.updateMany(
+            { _id: { $in: ids } }, // Filtro: registros en la lista de IDs
+            { $set: updateFields } // Acción: aplicar los cambios
+        );
+    } catch (err) {
+        throw err;
+    }
+};
+
 // =======================
 // BORRADO
 // =======================
@@ -176,6 +192,7 @@ module.exports = {
     insertMany,
     insertUpdateMany,
     update,
+    bulkUpdate,
     deleteById,
     deleteBySAOId
 };

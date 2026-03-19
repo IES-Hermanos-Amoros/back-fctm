@@ -24,10 +24,10 @@ router.post('/', dummyController.createDummy);
 // =======================
 // PUT
 // =======================
+router.patch('/bulk-update', dummyController.bulkUpdateDummies); // NUEVO ENDPOINT PARA ACTUALIZACIÓN MASIVA
 
 // Editar dummy por ID
 router.put('/:id', dummyController.editDummyById);
-
 // =======================
 // DELETE
 // =======================

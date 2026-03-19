@@ -87,6 +87,29 @@ exports.editDummyById = async (req, res) => {
   }
 };
 
+// En dummy.controller.js
+exports.bulkUpdateDummies = async (req, res) => {
+  // Cambiamos 'update' por 'updates' para que coincida con el frontend si quieres, 
+  // o lo mapeamos aquí:
+  const { ids, updates } = req.body; 
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Se requiere un array de IDs' });
+  }
+
+  try {
+    // IMPORTANTE: Pasar los dos argumentos por separado
+    const result = await dummyService.bulkUpdate(ids, updates);
+    
+    res.status(200).json({ 
+      success: true, // Importante para que tu utils/functions detecte éxito
+      message: `${result.modifiedCount} registros actualizados correctamente` 
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error en la actualización masiva' });
+  }
+};
+
 // =======================
 // DELETE
 // =======================
