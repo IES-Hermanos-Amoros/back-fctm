@@ -192,4 +192,40 @@ exports.verifyEmail = wrapAsync(async (req,res,next) => {
   });
 
 });
+
+
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+exports.requestPasswordRecovery = wrapAsync(async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(new AppError("Debe proporcionar un email de contacto", 400));
+  }
+
+  const result = await authService.requestPasswordRecovery(email);
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: result.message
+  });
+});
+
+
+// CAMBIAR CONTRASEÑA POR TOKEN (recuperación)
+exports.changePasswordByToken = wrapAsync(async (req, res, next) => {
+  const { token } = req.params;
+  const { newPassword, newPasswordRep } = req.body;
+
+  if (!newPassword || !newPasswordRep) {
+    return next(new AppError("Debe proporcionar la nueva contraseña y su confirmación", 400));
+  }
+
+  const result = await authService.changePasswordByToken(token, newPassword, newPasswordRep);
+
+  res.status(200).json({
+    status: "SUCCESS",
+    message: result.message
+  });
+});
+
 //LOGINSAOFCTM FIN

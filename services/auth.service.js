@@ -251,4 +251,84 @@ exports.registerFromSAO = async (saoData) => {
   };
 };
 
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA
+exports.requestPasswordRecovery = async (contactEmail) => {
+  if (!contactEmail) {
+    throw new AppError("Debe proporcionar un email de contacto", 400);
+  }
+
+  const user = await userManager.findOne({ FCTM_contact_email: contactEmail });
+
+  if (!user) {
+    throw new AppError("No existen usuarios con ese email de contacto", 404);
+  }
+
+  const recoveryToken = crypto.randomBytes(32).toString("hex");
+
+  user.FCTM_email_verification_token = recoveryToken;
+  user.FCTM_email_verification_expires = Date.now() + 1000 * 60 * 60; // 1h
+
+  await user.save();
+
+  const recoveryLink = `${process.env.USE_HTTPS === "1" ? "https" : "http"}${process.env.FRONTEND_URL}/auth/change-password/${recoveryToken}`;
+
+  if (NODEMAILER_ACTIVE) {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || '"FCT Manager - IES Hermanos Amorós" <sanchez.migben@gmail.com>',
+      to: contactEmail,
+      subject: "Recuperación de contraseña",
+      html: `
+        <h2>Recuperación de contraseña</h2>
+        <p>Haz clic en el siguiente enlace para establecer una nueva contraseña:</p>
+        <a href="${recoveryLink}">Cambiar contraseña</a>
+        <p>Este enlace expirará en 1 hora.</p>
+      `
+    });
+    console.log(`✅ Correo de recuperación enviado a ${contactEmail} con link: ${recoveryLink}`);
+  } else {
+    console.warn("⚠️ Nodemailer is disabled. Set NODEMAILER_ACTIVE=1 to enable it.");
+    logger.access.info(`⚠️ Simulación: Correo de recuperación para ${contactEmail} con link: ${recoveryLink}`);
+    console.log(`⚠️ Simulación: Correo de recuperación para ${contactEmail} con link: ${recoveryLink}`);
+  }
+
+  return { message: "Se ha enviado un correo con las instrucciones para recuperar la contraseña" };
+};
+
+// 🔑 CAMBIAR CONTRASEÑA POR TOKEN (recuperación)
+exports.changePasswordByToken = async (token, newPassword, newPasswordRep) => {
+  if (!token || !newPassword || !newPasswordRep) {
+    throw new AppError("Faltan datos requeridos", 400);
+  }
+
+  if (newPassword !== newPasswordRep) {
+    throw new AppError("Las contraseñas no coinciden", 400);
+  }
+
+  if (!validateStrongPassword(newPassword)) {
+    throw new AppError(
+      "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial",
+      400
+    );
+  }
+
+  const user = await userManager.findOne({
+    FCTM_email_verification_token: token,
+    FCTM_email_verification_expires: { $gt: Date.now() }
+  }).select("+FCTM_password");
+
+  if (!user) {
+    throw new AppError("Token inválido o expirado", 400);
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+
+  user.FCTM_password = hashedPassword;
+  user.FCTM_email_verification_token = undefined;
+  user.FCTM_email_verification_expires = undefined;
+
+  await user.save();
+
+  return { message: "Contraseña actualizada correctamente. Ya puedes iniciar sesión." };
+};
+
 //LOGINSAOFCTM FIN
