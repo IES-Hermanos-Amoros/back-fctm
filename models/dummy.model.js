@@ -54,6 +54,12 @@ const dummySchema = new mongoose.Schema({
         default: []
     }],
 
+    FCTM_skills: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SkillManager",
+        default: []
+    }],
+
     // Fechas de control
     FCTM_inserted_date: {
         type: Date,
