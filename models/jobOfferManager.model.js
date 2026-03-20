@@ -57,6 +57,12 @@ const jobOfferSchema = new mongoose.Schema({
         default: []
     }],
 
+    FCTM_skills: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SkillManager", // Relación con las aptitudes
+        default: []
+    }],
+
     // Fecha de creación automática
     FCTM_inserted_date: {
         type: Date,

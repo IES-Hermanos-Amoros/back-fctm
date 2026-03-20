@@ -28,6 +28,6 @@ const skillSchema = new mongoose.Schema({
 
 }, { timestamps: true }); // Para saber cuándo se creó cada skill
 
-const Skill = mongoose.model("Skills", skillSchema);
+const Skill = mongoose.model("SkillManager", skillSchema);
 
 module.exports = Skill;

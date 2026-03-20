@@ -134,6 +134,12 @@ const userManagerSchema = new mongoose.Schema({
         default: []
     }],
 
+    FCTM_skills: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SkillManager", // Relación con las aptitudes
+        default: []
+    }],
+
     //En el SHOW de una empresa, alumno y profesor... mostraremos el listado de FCTs filtrando por SAO_id = (SAO_student_id, SAO_company_id o SAO_teacher_id según proceda)
     /*FCTM_fcts: [{
         type: mongoose.Schema.Types.ObjectId,
