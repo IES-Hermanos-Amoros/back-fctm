@@ -14,7 +14,12 @@ const find = async () => {
         .populate({
                 path: "FCTM_category",
                 select: "_id FCTM_category_name" // Solo traemos lo necesario
-            });
+            })
+        .populate({
+            path: "FCTM_skills",
+            select: "_id FCTM_skill_name FCTM_skill_verified",
+            match: { FCTM_skill_verified: true }
+        })
     } catch (err) {
         throw err;
     }
@@ -30,7 +35,12 @@ const findByFilter = async (filter) => {
         .populate({
                 path: "FCTM_category",
                 select: "_id FCTM_category_name" // Solo traemos lo necesario
-            });
+            })
+        .populate({
+            path: "FCTM_skills",
+            select: "_id FCTM_skill_name FCTM_skill_verified",
+            match: { FCTM_skill_verified: true }
+        })
     } catch (err) {
         throw err;
     }
@@ -138,7 +148,12 @@ const update = async (id, data) => {
         new: true,          // devuelve el documento actualizado
         runValidators: true // valida el schema
       }
-    );
+    )
+    .populate({ path: "FCTM_documents", select: "_id FCTM_document_name FCTM_document_url" })
+    .populate({ path: "FCTM_category", select: "_id FCTM_category_name" })
+    .populate({ path: "FCTM_skills", 
+        select: "_id FCTM_skill_name FCTM_skill_verified", 
+        match: { FCTM_skill_verified: true } }); // <--- Añade esto
   } catch (err) {
     throw err;
   }
