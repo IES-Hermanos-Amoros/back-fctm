@@ -88,3 +88,29 @@ exports.deleteSkillById = wrapAsync(async (req, res, next) => {
         next(new AppError("Error al eliminar la aptitud", 500));
     }
 });
+
+exports.ensureSkills = wrapAsync(async (req, res, next) => {
+    const { names } = req.body
+    const ids = []
+    
+    for (const name of names) {
+        let skill = await skillService.searchExact(name)
+        if (!skill) {
+            skill = await skillService.create({
+                FCTM_skill_name: name,
+                FCTM_skill_verified: false,
+                FCTM_skill_usage_count: 1,
+                FCTM_skill_created_by: req.user.id
+            })
+        } else {
+            skill.FCTM_skill_usage_count =
+                (skill.FCTM_skill_usage_count || 0) + 1
+            await skill.save()
+        }
+        ids.push(skill._id)
+    }
+    res.json({
+        success: true,
+        data: ids
+    })
+})

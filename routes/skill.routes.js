@@ -19,6 +19,12 @@ router.get("/:id", skillController.getSkillById);
 // Crear una nueva aptitud
 router.post("/", skillController.createSkill);
 
+router.post(
+    "/ensure",
+    protect,
+    skillController.ensureSkills
+);
+
 // Editar una aptitud (Cambiado a patch para ser fiel a tu ejemplo)
 router.patch("/:id", skillController.editSkillById);
 
