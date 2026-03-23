@@ -1,66 +1,75 @@
 const documentModel = require('../models/documentManager.model')
 const mongoose = require('mongoose')
-const ActionManager = require("../models/actionManager.model"); // Importante para el populate
-const userManager = require("../models/userManager.model");    // Importante para la búsqueda de usuarios
-const jobOfferManager = require("../models/jobOfferManager.model") // Importante para actualizar ofertas de empleo
+const ActionManager = require('../models/actionManager.model') // Importante para el populate
+const userManager = require('../models/userManager.model') // Importante para la búsqueda de usuarios
+const jobOfferManager = require('../models/jobOfferManager.model') // Importante para actualizar ofertas de empleo
 
-//devolver documentos
-exports.getAll = async() => //documentModel.find()
-{
-    const documents = await documentModel.find()
+//devolver documentos filtrados por perfil
+exports.getAll = async userProfile => {
+  let query = {}
+  if (userProfile !== 'ADMINISTRADOR') {
+    query = { FCTM_visible_to_profiles: userProfile }
+  }
+  const documents = await documentModel
+    .find(query)
     .populate({
-        path: "acciones_relacionadas", // virtual real de 1 nivel, esto sí existe
-        select: "FCTM_action_title FCTM_action_type FCTM_action_notes FCTM_action_datetime FCTM_documents FCTM_created_by FCTM_updated_date"
+      path: 'acciones_relacionadas',
+      select:
+        'FCTM_action_title FCTM_action_type FCTM_action_notes FCTM_action_datetime FCTM_documents FCTM_created_by FCTM_updated_date',
     })
     .populate({
-        path: "usuarios_relacionados", // populate al virtual User → Documents (como CV de alumno)
-        select: "SAO_name SAO_profile SAO_email SAO_phone SAO_company_nameManager SAO_company_activity SAO_student_id"
+      path: 'usuarios_relacionados',
+      select:
+        'SAO_name SAO_profile SAO_email SAO_phone SAO_company_nameManager SAO_company_activity SAO_student_id',
     })
     .populate({
-        path: "FCTM_document_created_by", //quién subió el documento
-        model: "UserManager",
-        select: "SAO_name SAO_profile SAO_email SAO_phone"
+      path: 'FCTM_document_created_by',
+      model: 'UserManager',
+      select: 'SAO_name SAO_profile SAO_email SAO_phone',
     })
     .populate({
-        path: "oferta_relacionada",
-        select: "FCTM_job_title FCTM_job_status",
-        // Si quieres saber qué empresa publicó esa oferta, puedes anidar:
-        populate: {
-            path: "empresa",
-            select: "SAO_name"
-        }
+      path: 'oferta_relacionada',
+      select: 'FCTM_job_title FCTM_job_status',
+      populate: {
+        path: 'empresa',
+        select: 'SAO_name',
+      },
     })
     .lean()
 
-    const actionIds = documents.flatMap(doc => doc.acciones_relacionadas.map(a => a._id))
-
-    const users = await userManager.find({ FCTM_actions: { $in: actionIds } })
-    .select("SAO_name SAO_profile SAO_email SAO_phone SAO_company_nameManager SAO_company_activity SAO_student_id FCTM_actions")
+  const actionIds = documents.flatMap(doc =>
+    doc.acciones_relacionadas.map(a => a._id)
+  )
+  const users = await userManager
+    .find({ FCTM_actions: { $in: actionIds } })
+    .select(
+      'SAO_name SAO_profile SAO_email SAO_phone SAO_company_nameManager SAO_company_activity SAO_student_id FCTM_actions'
+    )
     .lean()
 
-    const mapActionOwner = {}
-    users.forEach(u => {
-        u.FCTM_actions.forEach(aid => {
-            mapActionOwner[aid.toString()] = {
-                _id: u._id,
-                SAO_name: u.SAO_name,
-                SAO_profile: u.SAO_profile,
-                SAO_email: u.SAO_email,
-                SAO_phone: u.SAO_phone,
-                SAO_company_nameManager: u.SAO_company_nameManager,
-                SAO_company_activity: u.SAO_company_activity,
-                SAO_student_id: u.SAO_student_id
-            }
-        })
+  const mapActionOwner = {}
+  users.forEach(u => {
+    u.FCTM_actions.forEach(aid => {
+      mapActionOwner[aid.toString()] = {
+        _id: u._id,
+        SAO_name: u.SAO_name,
+        SAO_profile: u.SAO_profile,
+        SAO_email: u.SAO_email,
+        SAO_phone: u.SAO_phone,
+        SAO_company_nameManager: u.SAO_company_nameManager,
+        SAO_company_activity: u.SAO_company_activity,
+        SAO_student_id: u.SAO_student_id,
+      }
     })
+  })
 
-    documents.forEach(doc => {
-        doc.acciones_relacionadas = doc.acciones_relacionadas.map(a => ({
-            ...a,
-            owner: mapActionOwner[a._id.toString()] || null // 👈 aquí va el usuario dueño
-        }))
-    })
-    return documents
+  documents.forEach(doc => {
+    doc.acciones_relacionadas = doc.acciones_relacionadas.map(a => ({
+      ...a,
+      owner: mapActionOwner[a._id.toString()] || null,
+    }))
+  })
+  return documents
 }
 
 //devolver documento por su id
@@ -78,10 +87,6 @@ exports.update = async (id, datos) =>
 
 //eliminar documento
 exports.remove = async id => await documentModel.findByIdAndDelete(id)
-
-
-
-
 
 //INCORRECTO
 //insertar varios documentos
@@ -105,19 +110,19 @@ exports.insertManyDocuments = async (files, datos) => {
     const docsToInsert = files.map(file => ({
       FCTM_document_name: file.originalname,
 
-      FCTM_document_description: datos?.description || "",
+      FCTM_document_description: datos?.description || '',
 
-      FCTM_document_type: datos?.type || "GENERAL",
+      FCTM_document_type: datos?.type || 'GENERAL',
 
-      FCTM_document_created_by: datos?.createdBy,//userId,
+      FCTM_document_created_by: datos?.createdBy, //userId,
 
       FCTM_document_url: `/uploads/${file.filename}`,
 
-      FCTM_visible_to_profiles: datos?.visible_to_profiles || ["ADMINISTRADOR"],
+      FCTM_visible_to_profiles: datos?.visible_to_profiles || ['ADMINISTRADOR'],
 
       /*FCTM_inserted_date: new Date(),
       FCTM_updated_date: new Date()*/
-    }))   
+    }))
 
     //insertar los documentos de una vez
     const insertedDocs = await documentModel.insertMany(docsToInsert)
@@ -132,7 +137,7 @@ exports.insertManyDocuments = async (files, datos) => {
       )
     }
 
-     //si hay userId, actualizar lista de documentos
+    //si hay userId, actualizar lista de documentos
     if (datos.jobOfferId) {
       const docIds = insertedDocs.map(doc => doc._id)
 
@@ -149,7 +154,6 @@ exports.insertManyDocuments = async (files, datos) => {
     throw error
   }
 }
-
 
 exports.insertManyDocumentsOLD2 = async (files, userId) => {
   try {
@@ -175,10 +179,7 @@ exports.insertManyDocumentsOLD2 = async (files, userId) => {
     const result = await documentModel.insertMany(docsToInsert)
     return result
   } catch (error) {
-    console.error(
-      'Error al insertar documentos:',
-      error.message
-    )
+    console.error('Error al insertar documentos:', error.message)
     throw new Error(`Error en la carga de archivos: ${error.message}`)
   }
 }
