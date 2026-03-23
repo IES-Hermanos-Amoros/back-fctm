@@ -9,12 +9,14 @@ const jwt = require('../middlewares/jwt.mw.js')
 const profile = require('../middlewares/profile.mw.js')
 const isOwnerMW = require('../middlewares/isOwner.mw.js')
 const DocumentManager = require('../models/documentManager.model.js')
+const authorizeDocumentAccess = require("../middlewares/authorizeDocument.mw.js")
+
 
 //Mostrar VISTA EJS index.ejs con listado de Documentos
 router.get(
   '/',
   jwt.protect,
-  profile.restrictTo('ADMINISTRADOR', 'PROFESOR'),
+  //profile.restrictTo('ADMINISTRADOR', 'PROFESOR'), //ERROR. El filtrado se realiza en el service, no aquí. Aquí se deja pasar a todos los perfiles, y el service se encarga de filtrar según el perfil del usuario.
   documentController.getAllDocuments
 )
 
@@ -23,7 +25,6 @@ router.get(
 router.post(
   '/upload',
   jwt.protect,
-  profile.restrictTo('ADMINISTRADOR', 'PROFESOR', 'EMPRESA', 'ALUMNO'),
   upload.array('files', 10),
   validateAndScanFiles,
   documentController.uploadDocuments
@@ -33,7 +34,6 @@ router.post(
 router.post(
   '/',
   jwt.protect,
-  profile.restrictTo('ADMINISTRADOR', 'PROFESOR', 'EMPRESA', 'ALUMNO'),
   documentController.newDocument
 )
 
@@ -41,7 +41,6 @@ router.post(
 router.get(
   '/:id',
   jwt.protect,
-  profile.restrictTo('ADMINISTRADOR', 'PROFESOR'),
   authorizeDocumentAccess('read'),
   documentController.getDocumentById
 )
@@ -53,7 +52,6 @@ router.get(
 router.patch(
   '/:id',
   jwt.protect,
-  profile.restrictTo('ADMINISTRADOR', 'PROFESOR', 'ALUMNO', 'EMPRESA'),
   authorizeDocumentAccess('update'),
   documentController.editDocumentById
 )
