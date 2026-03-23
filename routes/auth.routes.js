@@ -23,6 +23,12 @@ router.post("/complete-first-login", protectSAO, authController.completeFirstLog
 //PENDIENTE
 router.patch("/change-password", protect, authController.changePassword);
 
+// 6 Solicitar recuperación de contraseña (pública)
+router.post("/request-password-recovery", authController.requestPasswordRecovery);
+
+// 7 Cambiar contraseña mediante token de recuperación (pública)
+router.post("/change-password/:token", authController.changePasswordByToken);
+
 router.post("/logout", authController.logout);
 //Obtener información del usuario logueado
 router.get("/me", protect, authController.getLoguedUser)
