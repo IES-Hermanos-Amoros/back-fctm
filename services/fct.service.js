@@ -2,7 +2,7 @@ const fctManager = require("../models/fctManager.model");
 const userManager = require("../models/userManager.model");
 
 // 1. Listar todas las FCTs enriquecidas
-exports.findAll = async () => {
+exports.findAll = async (user) => {
   try {
     // 1. Obtenemos todas las FCTs
     const fcts = await fctManager.find({}).lean(); 
@@ -10,11 +10,22 @@ exports.findAll = async () => {
 
     if (fcts.length === 0) return [];
 
+    let filteredFcts = fcts;
+
+    if (!["ADMINISTRADOR", "PROFESOR"].includes(user.profile)) {
+      filteredFcts = fcts.filter(fct => {
+        return (
+          fct.SAO_student_id === user.SAO_id ||
+          fct.SAO_company_id === user.SAO_id
+        );
+      });
+    }
+
     // 2. Extraemos todos los IDs únicos (estudiantes, empresas y profesores) 
     // para hacer una sola consulta a la base de datos de usuarios
-    const studentIds = [...new Set(fcts.map(f => f.SAO_student_id))];
-    const teacherIds = [...new Set(fcts.map(f => f.SAO_teacher_id))];
-    const companyIds = [...new Set(fcts.map(f => f.SAO_company_id))];
+    const studentIds = [...new Set(filteredFcts.map(f => f.SAO_student_id))];
+    const teacherIds = [...new Set(filteredFcts.map(f => f.SAO_teacher_id))];
+    const companyIds = [...new Set(filteredFcts.map(f => f.SAO_company_id))];
 
     const allUserIds = [...new Set([...studentIds, ...teacherIds, ...companyIds])];
 
@@ -30,7 +41,7 @@ exports.findAll = async () => {
     }, {});
 
     // 5. Cruzamos los datos
-    const enrichedFcts = fcts.map(fct => {
+    const enrichedFcts = filteredFcts.map(fct => {
       const student = userMap[fct.SAO_student_id];
       const teacher = userMap[fct.SAO_teacher_id];
       const company = userMap[fct.SAO_company_id];
@@ -100,12 +111,20 @@ exports.findAll_old = async () => {
 };
 
 // 2. Buscar por ID y devolver enriquecido
-exports.findById = async (id) => {
+exports.findById = async (id, user) => {
   try {
     // 1. Buscamos la FCT (usamos .lean() para poder manipular el objeto fácilmente)
     const fct = await fctManager.findOne({ _id: id }).lean();
     
     if (!fct) return null;
+
+    if (!["ADMINISTRADOR", "PROFESOR"].includes(user.profile)) {
+      const isOwner =
+        fct.SAO_student_id === user.SAO_id ||
+        fct.SAO_company_id === user.SAO_id;
+
+      if (!isOwner) return null;
+    }
 
     // 2. Recolectamos los IDs necesarios
     const userIds = [

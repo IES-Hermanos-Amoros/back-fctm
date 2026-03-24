@@ -5,6 +5,7 @@ const fctController = require("../controllers/fct.controller")
 
 const { protect } = require("../middlewares/jwt.mw")
 const { restrictTo } = require("../middlewares/profile.mw")
+const { isFctOwner } = require("../middlewares/isFctOwner.mw");
 
 // GET -> Mostrar listado de FCTs
 router.get(
@@ -18,9 +19,9 @@ router.get(
 router.get(
   "/:id",
   protect,
-  //restrictTo("ADMINISTRADOR","PROFESOR"), --> De cara al sprint 5 
+  isFctOwner(["ADMINISTRADOR", "PROFESOR"]),
   fctController.findFctById
-)
+);
 
 // PATCH -> Actualizar FCT
 router.patch(
