@@ -7,7 +7,21 @@ const { compareLogin, hashPassword,validateStrongPassword } = require('../utils/
 exports.getAll = async () => await UserManager.find({ SAO_profile: "PROFESOR" })
 
 //Devolver un profesor por ID (solo si es PROFESOR)
-exports.getById = async (id) => await UserManager.findOne({ _id: id, SAO_profile: "PROFESOR" })
+//exports.getById = async (id) => await UserManager.findOne({ _id: id, SAO_profile: "PROFESOR" })
+exports.getById = async (id) => {
+  return await UserManager.findOne({
+    _id: id,
+    SAO_profile: "PROFESOR"
+  }).populate({
+    path: "FCTM_documents",
+    match: { FCTM_document_type: "AVATAR" },
+    options: {
+      sort: { FCTM_inserted_date: -1 },
+      limit: 1
+    },
+    select: "FCTM_document_url"
+  });
+};
 
 //Edita solo campos FCTM_ de un profesor existente
 /*exports.update = async (id, datos) => {

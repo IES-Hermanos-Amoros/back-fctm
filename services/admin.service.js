@@ -7,25 +7,17 @@ exports.getAllAdmins = async () => await Admin.find({SAO_profile: 'ADMINISTRADOR
 
 exports.getAdminById = async id =>
   await Admin.findOne({ _id: id, SAO_profile: 'ADMINISTRADOR' })
+  .populate({
+    path: "FCTM_documents",
+    match: { FCTM_document_type: "AVATAR" },
+    options: {
+      sort: { FCTM_inserted_date: -1 },
+      limit: 1
+    },
+    select: "FCTM_document_url"
+  });
 
-/*exports.update = async (id, data) => {
-  for (const campo in data) {
-    if (Object.prototype.hasOwnProperty.call(data, campo)) {
-      const regex = /^FCTM_/i
-      if (!regex.test(campo)) {
-        throw new Error(
-          `El campo '${campo}' no es válido. Debe empezar por FCTM_`
-        )
-      }
-    }
-  }
 
-  return await Admin.findOneAndUpdate(
-    { _id: id, SAO_profile: 'ADMINISTRADOR' },
-    data,
-    { new: true }
-  )
-}*/
 
 exports.update = async (id, data) => {
   const { password, newPassword, ...otherData } = data;
