@@ -4,7 +4,7 @@ const fctService = require("../services/fct.service")
 
 
 exports.findAllFcts = wrapAsync(async (req, res, next) => {
-    let fcts = await fctService.findAll()
+    let fcts = await fctService.findAll(req.user)
     if(fcts.length > 0) {
         res.status(200).json(fcts)
     }else{
@@ -13,7 +13,7 @@ exports.findAllFcts = wrapAsync(async (req, res, next) => {
 })
 
 exports.findFctById = wrapAsync(async (req, res, next) => {
-    const fct = await fctService.findById(req.params.id)
+    const fct = await fctService.findById(req.params.id, req.user)
     if(fct) {
         res.status(200).json(fct)
     } else {
