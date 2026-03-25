@@ -105,3 +105,7 @@ const seedUsuarios = async () => {
 };
 
 seedUsuarios();
+
+
+//10099034 - Pons123@ - ivanponsdeonil@hotmail.es (ALUMNO REAL)
+//B98064462 - Laberit123@ - personas@laberit.com (EMPRESA REAL)

@@ -6,6 +6,15 @@ exports.findAll = async () => {
   try {
     const students = await userManager
       .find({ SAO_profile: "ALUMNO" })
+      .populate({
+                path: "FCTM_company_category",
+                select: "_id FCTM_category_name" // Solo traemos lo necesario
+            })
+        .populate({
+            path: "FCTM_skills",
+            select: "_id FCTM_skill_name FCTM_skill_verified",
+            match: { FCTM_skill_verified: true }
+        })
       .sort({ SAO_name: 1 });
 
     return students;
@@ -22,6 +31,15 @@ exports.findById = async (id) => {
       _id: id,
       SAO_profile: "ALUMNO",
     })
+    .populate({
+                path: "FCTM_company_category",
+                select: "_id FCTM_category_name" // Solo traemos lo necesario
+            })
+      .populate({
+          path: "FCTM_skills",
+          select: "_id FCTM_skill_name FCTM_skill_verified",
+          match: { FCTM_skill_verified: true }
+      })
     .populate({
       path: 'FCTM_documents',
       select: 'FCTM_document_name FCTM_document_type FCTM_document_url FCTM_inserted_date',

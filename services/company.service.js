@@ -6,7 +6,15 @@ exports.getAll = async () => {
     return await userManagerModel.find({
         SAO_profile: "EMPRESA"
     })
-    .populate("FCTM_company_category", "FCTM_category_name")
+    .populate({
+                path: "FCTM_company_category",
+                select: "_id FCTM_category_name" // Solo traemos lo necesario
+            })
+      .populate({
+          path: "FCTM_skills",
+          select: "_id FCTM_skill_name FCTM_skill_verified",
+          match: { FCTM_skill_verified: true }
+      })    
 }
 
 exports.getById = async (id) => {
@@ -24,7 +32,15 @@ exports.getById = async (id) => {
             limit: 1
           },
           select: "FCTM_document_url"
-        });
+        }).populate({
+                path: "FCTM_company_category",
+                select: "_id FCTM_category_name" // Solo traemos lo necesario
+            })
+        .populate({
+            path: "FCTM_skills",
+            select: "_id FCTM_skill_name FCTM_skill_verified",
+            match: { FCTM_skill_verified: true }
+        })
 }
 
 /*
