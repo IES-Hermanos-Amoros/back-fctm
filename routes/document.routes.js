@@ -9,8 +9,7 @@ const jwt = require('../middlewares/jwt.mw.js')
 const profile = require('../middlewares/profile.mw.js')
 const isOwnerMW = require('../middlewares/isOwner.mw.js')
 const DocumentManager = require('../models/documentManager.model.js')
-const authorizeDocumentAccess = require("../middlewares/authorizeDocument.mw.js")
-
+const authorizeDocumentAccess = require('../middlewares/authorizeDocument.mw.js')
 
 //Mostrar VISTA EJS index.ejs con listado de Documentos
 router.get(
@@ -31,11 +30,7 @@ router.post(
 )
 
 //POST - Crear Documento
-router.post(
-  '/',
-  jwt.protect,
-  documentController.newDocument
-)
+router.post('/', jwt.protect, documentController.newDocument)
 
 //Mostrar Documentos por ID
 router.get(
@@ -43,6 +38,14 @@ router.get(
   jwt.protect,
   authorizeDocumentAccess('read'),
   documentController.getDocumentById
+)
+
+// Descargar archivo físico del documento
+router.get(
+  '/:id/download',
+  jwt.protect,
+  authorizeDocumentAccess('read'),
+  documentController.downloadDocument
 )
 
 //Mostrar vista para editar un Documento
