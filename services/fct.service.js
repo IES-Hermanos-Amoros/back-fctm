@@ -113,8 +113,18 @@ exports.findAll_old = async () => {
 // 2. Buscar por ID y devolver enriquecido
 exports.findById = async (id, user) => {
   try {
-    // 1. Buscamos la FCT (usamos .lean() para poder manipular el objeto fácilmente)
-    const fct = await fctManager.findOne({ _id: id }).lean();
+    // 1. Buscamos la FCT con populate de reseñas verificadas
+    const fct = await fctManager.findOne({ _id: id })
+      .populate({
+        path: "FCTM_reviews",
+        match: { FCTM_review_verified: true }, // Solo reseñas verificadas
+        populate: {
+          path: "FCTM_user_id",
+          select: "SAO_name"
+        },
+        options: { sort: { FCTM_review_date: -1 } } // Ordenar por fecha descendente
+      })
+      .lean();
     
     if (!fct) return null;
 
@@ -149,8 +159,12 @@ exports.findById = async (id, user) => {
     const teacher = userMap[fct.SAO_teacher_id];
     const company = userMap[fct.SAO_company_id];
 
+    // Filtramos las reseñas que fueron populadas (las no verificadas vendrán como null)
+    const verifiedReviews = (fct.FCTM_reviews || []).filter(r => r !== null);
+
     return {
       ...fct, // spread operator para incluir todos los campos originales
+      FCTM_reviews: verifiedReviews, // Usamos las reseñas ya populadas y filtradas
       SAO_student_fullname: student ? student.SAO_name : "No encontrado",
       SAO_company_name: company ? company.SAO_name : "No encontrada",
       SAO_company_city: company ? company.SAO_company_city : "No definida",
