@@ -1,7 +1,8 @@
 const reviewService = require('../services/review.service')
 const { wrapAsync } = require('../utils/functions')
+const AppError = require('../utils/AppError')
 
-exports.getAllVerifiedReviews = wrapAsync(async (req,res) => {
+exports.getAllVerifiedReviews = wrapAsync(async (req,res,next) => {
   try {
     const reviews = await reviewService.getAll(true)
     res.status(200).json(reviews)
@@ -10,7 +11,7 @@ exports.getAllVerifiedReviews = wrapAsync(async (req,res) => {
   }
 })
 
-exports.getAllNotVerifiedReviews = wrapAsync(async (req,res) => {
+exports.getAllNotVerifiedReviews = wrapAsync(async (req,res,next) => {
   try {
     const reviews = await reviewService.getAll(false)
     res.status(200).json(reviews)
@@ -19,7 +20,7 @@ exports.getAllNotVerifiedReviews = wrapAsync(async (req,res) => {
   }
 })
 
-exports.getReviewById = wrapAsync(async (req,res) => {
+exports.getReviewById = wrapAsync(async (req,res,next) => {
   try {
     const { id } = req.params
     const review = await reviewService.getById(id)
@@ -34,16 +35,20 @@ exports.getReviewById = wrapAsync(async (req,res) => {
   }
 })
 
-exports.createReview = wrapAsync(async (req,res) => {
+exports.createReview = async (req,res,next) => {
   try {
+    console.log("=== CREATE REVIEW ===")
+    console.log("req.body:", req.body)
     const review = await reviewService.create(req.body)
     res.status(201).json({ review, message: 'Reseña creada correctamente.' })
   } catch (error) {
-    next(new AppError("Error al crear la reseña",500))
+    console.error("Error real:", error.message)
+    console.error("Stack:", error.stack)
+    next(new AppError("Error al crear la reseña: " + error.message, 500))
   }
-})
+}
 
-exports.editReviewById = wrapAsync(async (req,res) => {
+exports.editReviewById = wrapAsync(async (req,res,next) => {
   try {
     const { id } = req.params
     const comment = req.body
@@ -58,7 +63,7 @@ exports.editReviewById = wrapAsync(async (req,res) => {
   }
 })
 
-exports.deleteReviewById = wrapAsync(async (req,res) => {
+exports.deleteReviewById = wrapAsync(async (req,res,next) => {
   try {
     const { id } = req.params
     const review = await reviewService.delete(id)

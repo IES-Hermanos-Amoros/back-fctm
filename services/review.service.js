@@ -12,18 +12,24 @@ exports.getById = async (id) => await reviewModel.findById(id)
 
 //Crear un nuevo comentario
 exports.create = async(datos) => {  
+    console.log("Datos recibidos:", datos)
     const { fctId, FCTM_user_id, ...reviewData } = datos || {}
+    console.log("fctId:", fctId, "FCTM_user_id:", FCTM_user_id)
+    console.log("reviewData:", reviewData)
     
     const newReview = new reviewModel({
         ...reviewData,
         FCTM_user_id,
         FCTM_review_verified: false
     })
+    console.log("newReview a guardar:", newReview)
     
     const savedReview = await newReview.save()
+    console.log("Reseña guardada:", savedReview)
 
     // Si viene el fctId, relacionamos la reseña con la FCT
     if (fctId) {
+        console.log("Actualizando FCT con fctId:", fctId)
         await fctManagerModel.findOneAndUpdate(
             { _id: fctId },
             { $addToSet: { FCTM_reviews: savedReview._id } },
