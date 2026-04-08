@@ -1,4 +1,5 @@
 const reviewModel = require("../models/reviewManager.model")
+const fctManagerModel = require("../models/fctManager.model")
 
 //Devolver todos los comentarios
 exports.getAll = async (getVerified) => {
@@ -11,8 +12,26 @@ exports.getById = async (id) => await reviewModel.findById(id)
 
 //Crear un nuevo comentario
 exports.create = async(datos) => {  
-    const newReview = new reviewModel(datos)
-    return await newReview.save()
+    const { fctId, FCTM_user_id, ...reviewData } = datos || {}
+    
+    const newReview = new reviewModel({
+        ...reviewData,
+        FCTM_user_id,
+        FCTM_review_verified: false
+    })
+    
+    const savedReview = await newReview.save()
+
+    // Si viene el fctId, relacionamos la reseña con la FCT
+    if (fctId) {
+        await fctManagerModel.findOneAndUpdate(
+            { _id: fctId },
+            { $addToSet: { FCTM_reviews: savedReview._id } },
+            { new: true }
+        )
+    }
+
+    return savedReview
 }
 
 //Edita un comentario existente
