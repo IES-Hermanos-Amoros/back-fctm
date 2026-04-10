@@ -51,11 +51,12 @@ const reviewSchema = new mongoose.Schema({
   ],
 
   // Relación con la FCT asociada
-  FCTM_fct_id: {
+  //ERROR - NO es necesario porque ya se guarda la referencia en FCTs
+  /*FCTM_fct_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "fctManager",
     default: null,
-  },
+  },*/
 
   // Fecha de creación automática
   FCTM_inserted_date: {

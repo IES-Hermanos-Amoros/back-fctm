@@ -46,14 +46,28 @@ exports.update = async (id,datos) => {
    return await reviewModel.findByIdAndUpdate(id,datos,{new:true})
 }
 
-//Elimina un comentario
-exports.delete = async(id) => {
-    const review = await reviewModel.findById(id)
-    if (review) {
-        await fctManager.findByIdAndUpdate(
-            review.FCTM_fct_id,
-            { $pull: { FCTM_reviews: id } }
+
+//ERROR (no funcionaba bien la eliminación)
+exports.delete = async(id, fctId = null) => {
+
+    console.log("Eliminando reseña con id:", id, "y fctId:", fctId)
+
+    const removedReview = await reviewModel.findByIdAndDelete(id)
+
+    if (!removedReview) return null
+
+    // Limpiamos la referencia en FCTs
+    if (fctId) {
+        await fctManagerModel.updateOne(
+            { _id: fctId },
+            { $pull: { FCTM_reviews: removedReview._id } }
+        )
+    } else {
+        await fctManagerModel.updateMany(
+            { FCTM_reviews: removedReview._id },
+            { $pull: { FCTM_reviews: removedReview._id } }
         )
     }
-    return await reviewModel.findByIdAndDelete(id)
+
+    return removedReview
 }

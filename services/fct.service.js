@@ -117,7 +117,12 @@ exports.findById = async (id, user) => {
     const fct = await fctManager.findOne({ _id: id })
       .populate({
         path: 'FCTM_reviews',
-        options: { sort: { FCTM_review_date: -1 } }
+        options: { sort: { FCTM_review_date: -1 } },
+        // --- NUEVO: Populate del usuario dentro de la reseña ---
+        populate: {
+          path: 'FCTM_user_id',
+          select: 'SAO_name' // Solo traemos el nombre para optimizar
+        }
       })
       .lean();
     

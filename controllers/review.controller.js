@@ -68,7 +68,9 @@ exports.editReviewById = wrapAsync(async (req,res,next) => {
 exports.deleteReviewById = wrapAsync(async (req, res, next) => {
   try {
     const { id } = req.params;
-    const review = await reviewService.delete(id);
+    //ERROR
+    const { fctId } = req.query
+    const review = await reviewService.delete(id,fctId);
     if (!review) {
       next(new AppError("No se encontró la reseña", 404));
     }
