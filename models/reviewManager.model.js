@@ -1,69 +1,79 @@
 const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema({
-    // Título de la reseña
-    FCTM_review_title: {
-        type: String,
-        required: true
+  // Título de la reseña
+  FCTM_review_title: {
+    type: String,
+    required: true,
+  },
+
+  // Texto de la reseña
+  FCTM_review_text: {
+    type: String,
+    required: true,
+  },
+
+  // Calificación otorgada (por ejemplo, en una escala de 1 a 5)
+  FCTM_review_rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5,
+    default: 5,
+  },
+
+  // Usuario que dejó la reseña (relación con el modelo de UserManager)
+  FCTM_user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "UserManager",
+    required: true,
+  },
+
+  // Sugerencia: Añadir un campo de 'verificada' para evitar spam
+  FCTM_review_verified: {
+    type: Boolean,
+    default: false,
+  },
+
+  // Fecha en que se creó la reseña
+  FCTM_review_date: {
+    type: Date,
+    default: () => new Date(),
+  },
+
+  // Relación con documentos adjuntos (puede tener uno o más documentos)
+  FCTM_documents: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DocumentManager",
+      default: [],
     },
+  ],
 
-    // Texto de la reseña
-    FCTM_review_text: {
-        type: String,
-        required: true
-    },
+  // Relación con la FCT asociada
+  FCTM_fct_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "fctManager",
+    default: null,
+  },
 
-    // Calificación otorgada (por ejemplo, en una escala de 1 a 5)
-    FCTM_review_rating: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 5
-    },
+  // Fecha de creación automática
+  FCTM_inserted_date: {
+    type: Date,
+    default: () => new Date(),
+  },
 
-    // Usuario que dejó la reseña (relación con el modelo de UserManager)
-    FCTM_user_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "UserManager",
-        required: true
-    },
-
-    // Sugerencia: Añadir un campo de 'verificada' para evitar spam
-    FCTM_review_verified: {
-        type: Boolean,
-        default: false
-    },
-
-    // Fecha en que se creó la reseña
-    FCTM_review_date: {
-        type: Date,
-        default: () => new Date()
-    },
-
-    // Relación con documentos adjuntos (puede tener uno o más documentos)
-    FCTM_documents: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "DocumentManager",
-        default: []
-    }],
-
-    // Fecha de creación automática
-    FCTM_inserted_date: {
-        type: Date,
-        default: () => new Date()
-    },
-
-    // Fecha de la última actualización
-    FCTM_updated_date: {
-        type: Date,
-        default: () => new Date()
-    }
+  // Fecha de la última actualización
+  FCTM_updated_date: {
+    type: Date,
+    default: () => new Date(),
+  },
 });
 
 // Middleware para actualizar la fecha de actualización
 reviewSchema.pre("save", function (next) {
-    this.FCTM_updated_date = new Date();
-    next();
+  this.FCTM_updated_date = new Date();
+  next();
 });
 
 const ReviewManager = mongoose.model("ReviewManager", reviewSchema);

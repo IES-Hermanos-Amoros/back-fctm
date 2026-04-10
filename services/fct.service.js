@@ -154,8 +154,12 @@ exports.findById = async (id, user) => {
     const teacher = userMap[fct.SAO_teacher_id];
     const company = userMap[fct.SAO_company_id];
 
+    // Filtramos las reseñas que fueron populadas (las no verificadas vendrán como null)
+    const verifiedReviews = (fct.FCTM_reviews || []).filter(r => r !== null);
+
     return {
       ...fct, // spread operator para incluir todos los campos originales
+      FCTM_reviews: verifiedReviews, // Usamos las reseñas ya populadas y filtradas
       SAO_student_fullname: student ? student.SAO_name : "No encontrado",
       SAO_company_name: company ? company.SAO_name : "No encontrada",
       SAO_company_city: company ? company.SAO_company_city : "No definida",

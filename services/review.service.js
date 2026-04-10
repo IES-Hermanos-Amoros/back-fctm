@@ -1,3 +1,4 @@
+const mongoose = require("mongoose")
 const reviewModel = require("../models/reviewManager.model")
 const fctManagerModel = require("../models/fctManager.model")
 
@@ -8,9 +9,9 @@ exports.getAll = async (getVerified) => {
 
 //Devolver un comentario por ID
 //SELECT * from Comments WHERE _id = id
-exports.getById = async (id) => await reviewModel.findById(id)
+exports.getById = async (id) => await reviewModel.findById(id).populate("FCTM_user_id", "SAO_name")
 
-//Crear un nuevo comentario
+//Crear un nuevo comentario y asociarlo a la FCT
 exports.create = async(datos) => {  
     console.log("Datos recibidos:", datos)
     const { fctId, FCTM_user_id, ...reviewData } = datos || {}
@@ -47,5 +48,12 @@ exports.update = async (id,datos) => {
 
 //Elimina un comentario
 exports.delete = async(id) => {
+    const review = await reviewModel.findById(id)
+    if (review) {
+        await fctManager.findByIdAndUpdate(
+            review.FCTM_fct_id,
+            { $pull: { FCTM_reviews: id } }
+        )
+    }
     return await reviewModel.findByIdAndDelete(id)
 }
