@@ -1,8 +1,8 @@
-const reviewService = require("../services/review.service");
-const { wrapAsync } = require("../utils/functions");
-const AppError = require("../utils/appError");
+const reviewService = require('../services/review.service')
+const { wrapAsync } = require('../utils/functions')
+const AppError = require('../utils/AppError')
 
-exports.getAllVerifiedReviews = wrapAsync(async (req, res, next) => {
+exports.getAllVerifiedReviews = wrapAsync(async (req,res,next) => {
   try {
     const reviews = await reviewService.getAll(true);
     res.status(200).json(reviews);
@@ -35,28 +35,20 @@ exports.getReviewById = wrapAsync(async (req, res, next) => {
   }
 });
 
-exports.createReview = wrapAsync(async (req, res, next) => {
+exports.createReview = async (req,res,next) => {
   try {
-    if (!req.user || !req.user.id) {
-      return next(new AppError("Usuario no autenticado", 401));
-    }
-    
-    if (!req.user.profile) {
-      return next(new AppError("Usuario sin perfil válido", 401));
-    }
-    
-    const reviewData = {
-      ...req.body,
-      FCTM_user_id: req.user.id
-    };
-    const review = await reviewService.create(reviewData);
-    res.status(201).json({ review, message: "Reseña creada correctamente. Pendiente de verificación." });
+    console.log("=== CREATE REVIEW ===")
+    console.log("req.body:", req.body)
+    const review = await reviewService.create(req.body)
+    res.status(201).json({ review, message: 'Reseña creada correctamente.' })
   } catch (error) {
-    next(new AppError("Error al crear la reseña: " + error.message, 500));
+    console.error("Error real:", error.message)
+    console.error("Stack:", error.stack)
+    next(new AppError("Error al crear la reseña: " + error.message, 500))
   }
-});
+}
 
-exports.editReviewById = wrapAsync(async (req, res, next) => {
+exports.editReviewById = wrapAsync(async (req,res,next) => {
   try {
     const { id } = req.params;
     const comment = req.body;

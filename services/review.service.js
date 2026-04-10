@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 const reviewModel = require("../models/reviewManager.model")
-const fctManager = require("../models/fctManager.model")
+const fctManagerModel = require("../models/fctManager.model")
 
 //Devolver todos los comentarios
 exports.getAll = async (getVerified) => {
@@ -13,36 +13,31 @@ exports.getById = async (id) => await reviewModel.findById(id).populate("FCTM_us
 
 //Crear un nuevo comentario y asociarlo a la FCT
 exports.create = async(datos) => {  
-    const { FCTM_fct_id, ...reviewData } = datos;
-    
-    let fctObjectId = null;
-    if (FCTM_fct_id && mongoose.Types.ObjectId.isValid(FCTM_fct_id)) {
-        fctObjectId = new mongoose.Types.ObjectId(FCTM_fct_id);
-    }
-    
-    // Verificar si la FCT existe si se proporcionó un ID
-    if (fctObjectId) {
-        const fctExists = await fctManager.findById(fctObjectId);
-        if (!fctExists) {
-            fctObjectId = null;
-        }
-    }
+    console.log("Datos recibidos:", datos)
+    const { fctId, FCTM_user_id, ...reviewData } = datos || {}
+    console.log("fctId:", fctId, "FCTM_user_id:", FCTM_user_id)
+    console.log("reviewData:", reviewData)
     
     const newReview = new reviewModel({
         ...reviewData,
-        FCTM_fct_id: fctObjectId,
-        FCTM_review_rating: Number(reviewData.FCTM_review_rating) || 5
+        FCTM_user_id,
+        FCTM_review_verified: false
     })
+    console.log("newReview a guardar:", newReview)
     
     const savedReview = await newReview.save()
-    
-    if (fctObjectId) {
-        await fctManager.findByIdAndUpdate(
-            fctObjectId,
-            { $addToSet: { FCTM_reviews: savedReview._id } }
+    console.log("Reseña guardada:", savedReview)
+
+    // Si viene el fctId, relacionamos la reseña con la FCT
+    if (fctId) {
+        console.log("Actualizando FCT con fctId:", fctId)
+        await fctManagerModel.findOneAndUpdate(
+            { _id: fctId },
+            { $addToSet: { FCTM_reviews: savedReview._id } },
+            { new: true }
         )
     }
-    
+
     return savedReview
 }
 
