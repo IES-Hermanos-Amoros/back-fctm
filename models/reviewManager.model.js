@@ -32,7 +32,7 @@ const reviewSchema = new mongoose.Schema({
   // Sugerencia: Añadir un campo de 'verificada' para evitar spam
   FCTM_review_verified: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 
   // Fecha en que se creó la reseña
