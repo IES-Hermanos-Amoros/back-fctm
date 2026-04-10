@@ -1,6 +1,35 @@
 const DocumentService = require('../services/document.service')
 const { wrapAsync } = require('../utils/functions')
 const AppError = require('../utils/AppError')
+const path = require('path')
+const fs = require('fs')
+
+exports.downloadDocument = wrapAsync(async (req, res, next) => {
+  const { id } = req.params
+  const document = await DocumentService.getById(id)
+
+  if (!document || !document.FCTM_document_url) {
+    return next(new AppError('Documento no encontrado', 404))
+  }
+
+  // El campo FCTM_document_url suele tener el formato "/uploads/nombre_archivo.pdf"
+  let relativePath = document.FCTM_document_url.startsWith('/')
+    ? document.FCTM_document_url.substring(1)
+    : document.FCTM_document_url
+
+  // Aplicar normalización (minúsculas y guiones bajos para espacios) al nombre del archivo
+  const parsedPath = path.parse(relativePath)
+  const normalizedName = parsedPath.name.toLowerCase().replace(/\s+/g, '_')
+  relativePath = path.join(parsedPath.dir, normalizedName + parsedPath.ext)
+
+  const filePath = path.join(__dirname, '..', relativePath)
+
+  if (fs.existsSync(filePath)) {
+    res.download(filePath, document.FCTM_document_name)
+  } else {
+    next(new AppError('El archivo físico no existe en el servidor', 404))
+  }
+})
 
 exports.getAllDocuments = wrapAsync(async (req, res, next) => {
   const userProfile = req.user.profile
