@@ -43,3 +43,12 @@ exports.searchExact = async (name) => {
         FCTM_skill_name: name.toUpperCase().trim()
     })
 }
+
+//BORRAR
+// Actualización masiva de aptitudes
+exports.bulkUpdate = async (ids, updates) => {
+    return await skillModel.updateMany(
+        { _id: { $in: ids } }, // Filtro: busca todos los documentos cuyo ID esté en la lista
+        { $set: updates }      // Acción: aplica los cambios (en este caso, poner verified a true)
+    );
+};
