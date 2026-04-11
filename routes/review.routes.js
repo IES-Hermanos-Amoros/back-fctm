@@ -21,10 +21,11 @@ router.get(
   reviewController.getAllNotVerifiedReviews,
 );
 
+//Logueado y ser admin, teacher o student (el que creó la reseña... el owner)
 router.get(
   "/:id",
   protect,
-  restrictTo("ADMINISTRADOR", "PROFESOR", "ALUMNO"),
+  isOwner(ReviewManager, "FCTM_user_id", ["ADMINISTRADOR", "PROFESOR"]),
   reviewController.getReviewById,
 );
 
