@@ -50,8 +50,9 @@ exports.update = async (id,datos) => {
 exports.delete = async(id) => {
     const review = await reviewModel.findById(id)
     if (review) {
-        await fctManager.findByIdAndUpdate(
-            review.FCTM_fct_id,
+        // Buscar la FCT que contiene esta reseña en su array
+        await fctManagerModel.updateMany(
+            { FCTM_reviews: id },
             { $pull: { FCTM_reviews: id } }
         )
     }

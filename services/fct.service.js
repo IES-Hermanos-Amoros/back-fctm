@@ -113,10 +113,11 @@ exports.findAll_old = async () => {
 // 2. Buscar por ID y devolver enriquecido
 exports.findById = async (id, user) => {
   try {
-    // 1. Buscamos la FCT con las reseñas populadas
+    // 1. Buscamos la FCT con las reseñas populadas (incluyendo el usuario de cada reseña)
     const fct = await fctManager.findOne({ _id: id })
       .populate({
         path: 'FCTM_reviews',
+        populate: { path: 'FCTM_user_id', select: 'SAO_name SAO_surname SAO_fullname' },
         options: { sort: { FCTM_review_date: -1 } }
       })
       .lean();
