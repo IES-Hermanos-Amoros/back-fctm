@@ -13,6 +13,14 @@ router.get("/", skillController.getAllVerifiedSkills);
 // Obtener todas las aptitudes no verificadas (para admin)
 router.get("/unverified",protect, restrictTo("ADMINISTRADOR","PROFESOR"), skillController.getAllNotVerifiedSkills);
 
+// Actualización masiva de aptitudes
+router.patch(
+    "/bulk-verify", 
+    protect, 
+    restrictTo("ADMINISTRADOR","PROFESOR"), 
+    skillController.bulkVerifySkills
+);
+
 // Obtener una aptitud específica por ID
 router.get("/:id", skillController.getSkillById);
 

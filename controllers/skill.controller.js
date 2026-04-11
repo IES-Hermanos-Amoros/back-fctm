@@ -114,3 +114,25 @@ exports.ensureSkills = wrapAsync(async (req, res, next) => {
         data: ids
     })
 })
+
+//BORRAR
+exports.bulkVerifySkills = wrapAsync(async (req, res, next) => {
+    try {
+        const { ids, updates } = req.body;
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return next(new AppError("No se proporcionaron IDs para validar", 400));
+        }
+
+        // Llamamos a un método del service
+        const result = await skillService.bulkUpdate(ids, updates);
+
+        res.status(200).json({
+            success: true,
+            message: 'Aptitudes validadas correctamente.',
+            data: result
+        });
+    } catch (error) {
+        next(new AppError("Error al realizar la validación masiva", 500));
+    }
+});
