@@ -34,13 +34,21 @@ exports.updateStudentFctm = wrapAsync(async (req, res, next) => {
     const { id } = req.params
     const updateData = req.body
 
+    console.log("\n=== UPDATE STUDENT FCTM ===");
+    console.log("ID:", id);
+    console.log("Update Data:", JSON.stringify(updateData, null, 2));
+    console.log("req.user:", req.user);
+
     const updatedUser = await userService.updateFctmFields(id, updateData)
+
+    console.log("Updated User:", updatedUser?._id);
 
     res.status(200).json({
       message: 'Campos FCTM actualizados correctamente',
       data: updatedUser,
     })
   } catch (error) {
+    console.log("ERROR en updateStudentFctm:", error.message);
     // Diferenciamos si el error es por falta de campos o por no encontrar al usuario
     const statusCode = error.message.includes('No se han proporcionado')
       ? 400
