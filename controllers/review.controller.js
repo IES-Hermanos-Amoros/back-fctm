@@ -74,15 +74,13 @@ exports.bulkValidateReviews = wrapAsync(async (req, res, next) => {
   }
 
   try {
-    const result = await ReviewManager.updateMany(
-      { _id: { $in: ids } }, 
-      { $set: { FCTM_review_verified: true } }
-    );
+    const result = await reviewService.bulkUpdate(ids);
       
     res.status(200).json({ 
       success: true, 
       message: `${result.modifiedCount} reseñas validadas correctamente` 
     });
+    
   } catch (error) {
     console.error("Error en updateMany:", error);
     res.status(500).json({ error: 'Error en la actualización masiva: ' + error.message });
