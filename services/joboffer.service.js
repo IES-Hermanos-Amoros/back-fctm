@@ -8,11 +8,12 @@ exports.getAllJobOffer = async () => {
         path: "empresa",
         // Usamos los nombres de campos de tu modelo UserManager
         select: "SAO_name SAO_organization SAO_company_city" 
-    }).populate({
-            path: "FCTM_skills",
-            select: "_id FCTM_skill_name FCTM_skill_verified",
-            match: { FCTM_skill_verified: true }
-        })
+    })
+    .populate({
+        path: "FCTM_skills",
+        select: "_id FCTM_skill_name FCTM_skill_verified",
+        match: { FCTM_skill_verified: true }
+    })
     .sort({ FCTM_inserted_date: -1 }); // Orden por fecha de inserción
 }
 
@@ -21,13 +22,13 @@ exports.getJobOfferById = async (id) => await jobOfferModel.findById(id).populat
         path: "empresa",
         // Usamos los nombres de campos de tu modelo UserManager
         select: "SAO_name SAO_organization SAO_company_city" 
-    }).populate({
-            path: "FCTM_skills",
-            select: "_id FCTM_skill_name FCTM_skill_verified",
-            match: { FCTM_skill_verified: true }
-        })
+    })
+    .populate({
+        path: "FCTM_skills",
+        select: "_id FCTM_skill_name FCTM_skill_verified",
+        match: { FCTM_skill_verified: true }
+    })//.populate("DocumentManager", "FCTM_document_name")
 
-        
 //Crear una nueva oferta de trabajo
 exports.createJobOffer = async (data) => {
     const { companyId, ...jobOfferData } = data || {}
@@ -52,11 +53,12 @@ exports.updateJobOffer = async (id, data) => {
         path: "empresa",
         // Usamos los nombres de campos de tu modelo UserManager
         select: "SAO_name SAO_organization SAO_company_city" 
-    }).populate({
-            path: "FCTM_skills",
-            select: "_id FCTM_skill_name FCTM_skill_verified",
-            match: { FCTM_skill_verified: true }
-        })
+    })
+    .populate({
+        path: "FCTM_skills",
+        select: "_id FCTM_skill_name FCTM_skill_verified",
+        match: { FCTM_skill_verified: true }
+    })
 }
 
 //Elimina una oferta de trabajo
