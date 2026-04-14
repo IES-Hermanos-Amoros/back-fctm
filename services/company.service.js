@@ -69,7 +69,7 @@ exports.update = async (id,datos) => {
     return await userManagerModel.findByIdAndUpdate(id, updateFields, { new:true })
 }*/
 
-exports.update = async (id, datos) => {
+exports.update = async (id, data) => {
   const { password, newPassword, ...otherData } = data;
   const filteredData = {};
 
@@ -81,19 +81,19 @@ exports.update = async (id, datos) => {
   if (!company) throw new Error("Empresa no encontrada");
 
   if (password && newPassword) {
-    
-    if (company.FCTM_password) {
-      const isMatch = await compareLogin(password, student.FCTM_password);
-      if (!isMatch) {
-        throw new Error("La contraseña actual es incorrecta");
+      // Cambiamos 'student' por 'company'
+      if (company.FCTM_password) {
+        const isMatch = await compareLogin(password, company.FCTM_password); 
+        if (!isMatch) {
+          throw new Error("La contraseña actual es incorrecta");
+        }
       }
-    }
 
-    if (!validateStrongPassword(newPassword)) {
-      throw new Error('La nueva contraseña no cumple con los requisitos de seguridad');
-    }
-    
-    company.FCTM_password = await hashPassword(newPassword);
+      if (!validateStrongPassword(newPassword)) {
+        throw new Error('La nueva contraseña no cumple con los requisitos de seguridad');
+      }
+      
+      company.FCTM_password = await hashPassword(newPassword);
   }
 
   Object.keys(filteredData).forEach((key) => {
