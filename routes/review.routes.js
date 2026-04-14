@@ -21,6 +21,13 @@ router.get(
   reviewController.getAllNotVerifiedReviews,
 );
 
+router.patch(
+  "/bulk-update",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR"),
+  reviewController.bulkValidateReviews
+)
+
 //Logueado y ser admin, teacher o student (el que creó la reseña... el owner)
 router.get(
   "/:id",
