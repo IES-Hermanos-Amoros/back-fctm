@@ -125,7 +125,25 @@ exports.updateFctmFields = async (id, data) => {
       student[key] = filteredData[key];
     });
 
-    return await student.save();
+    // 7. Guardar cambios
+    const updatedStudent = await student.save();
+
+    // 8. Retornar con populate de skills verificados (igual que Dummy)
+    return await userManager.findById(updatedStudent._id)
+      .populate({
+        path: "FCTM_company_category",
+        select: "_id FCTM_category_name"
+      })
+      .populate({
+        path: "FCTM_skills",
+        select: "_id FCTM_skill_name FCTM_skill_verified",
+        match: { FCTM_skill_verified: true }
+      })
+      .populate({
+        path: 'FCTM_documents',
+        select: 'FCTM_document_name FCTM_document_type FCTM_document_url FCTM_inserted_date',
+        options: { sort: { FCTM_inserted_date: -1 } }
+      });
 
   } catch (error) {
     console.error("Error en userService.updateFctmFields:", error);

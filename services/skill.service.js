@@ -2,7 +2,7 @@ const skillModel = require("../models/skillManager.model");
 
 // Devolver solo aptitudes verificadas (ordenadas alfabéticamente)
 exports.getAll = async (getVerified) => {
-    return await skillModel.find({ FCTM_skill_verified: getVerified }).sort({ FCTM_skill_usage_count: -1, FCTM_skill_name: 1 });
+    return await skillModel.find({ FCTM_skill_verified: getVerified }).sort({ createdAt: -1, FCTM_skill_usage_count: -1 });
 };
 
 // Devolver una aptitud por ID (independientemente de si está verificada o no)

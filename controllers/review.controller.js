@@ -1,6 +1,7 @@
 const reviewService = require('../services/review.service')
 const { wrapAsync } = require('../utils/functions')
 const AppError = require('../utils/AppError')
+const ReviewManager = require("../models/reviewManager.model.js");
 
 exports.getAllVerifiedReviews = wrapAsync(async (req,res,next) => {
   try {
@@ -62,6 +63,27 @@ exports.editReviewById = wrapAsync(async (req,res,next) => {
       .json({ review, message: "Reseña actualizada correctamente." });
   } catch (error) {
     next(new AppError("Error al actualizar la reseña", 500));
+  }
+});
+
+exports.bulkValidateReviews = wrapAsync(async (req, res, next) => {
+  const { ids } = req.body; 
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Se requiere un array de IDs' });
+  }
+
+  try {
+    const result = await reviewService.bulkUpdate(ids);
+      
+    res.status(200).json({ 
+      success: true, 
+      message: `${result.modifiedCount} reseñas validadas correctamente` 
+    });
+    
+  } catch (error) {
+    console.error("Error en updateMany:", error);
+    res.status(500).json({ error: 'Error en la actualización masiva: ' + error.message });
   }
 });
 
