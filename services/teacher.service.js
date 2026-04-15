@@ -58,7 +58,9 @@ exports.update = async (id, datos) => {
     if(!validateStrongPassword(newPassword)){
       throw new AppError('La nueva contraseña no cumple con los requisitos de seguridad', 400);
     }
-    teacher.password = await hashPassword(newPassword);
+    //ERROR
+    //teacher.password = await hashPassword(newPassword);
+    teacher.FCTM_password = await hashPassword(newPassword);
   }
 
   // 4. Filtrar y asignar solo los campos que empiezan por FCTM_
