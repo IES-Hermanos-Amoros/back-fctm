@@ -86,7 +86,28 @@ exports.update = async (id, datos) =>
   await documentModel.findByIdAndUpdate(id, datos, { new: true })
 
 //eliminar documento
-exports.remove = async id => await documentModel.findByIdAndDelete(id)
+exports.remove = async (id,idUser = null) => { 
+  //await documentModel.findByIdAndDelete(id) 
+  // 1. Eliminamos el documento físicamente de la colección de documentos
+  const deletedDoc = await documentModel.findByIdAndDelete(id);
+
+  if (!deletedDoc) {
+    throw new Error('Documento no encontrado');
+  }
+
+  // 2. Si se proporcionó un userId, limpiamos la referencia en el usuario
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    await userManager.updateOne(
+      { _id: userId },
+      { $pull: { FCTM_documents: id } } // Extrae el ID del array FCTM_documents
+    );
+  }
+  
+  // Opcional: Si el documento también podía estar en una oferta de trabajo, 
+  // podrías añadir aquí una lógica similar para jobOfferManager si fuera necesario.
+
+  return deletedDoc;
+}
 
 //INCORRECTO
 //insertar varios documentos
