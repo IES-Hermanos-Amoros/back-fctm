@@ -86,7 +86,7 @@ exports.update = async (id, datos) =>
   await documentModel.findByIdAndUpdate(id, datos, { new: true })
 
 //eliminar documento
-exports.remove = async (id,idUser = null) => { 
+exports.remove = async (id,userId = null) => { 
   //await documentModel.findByIdAndDelete(id) 
   // 1. Eliminamos el documento físicamente de la colección de documentos
   const deletedDoc = await documentModel.findByIdAndDelete(id);
@@ -96,7 +96,7 @@ exports.remove = async (id,idUser = null) => {
   }
 
   // 2. Si se proporcionó un userId, limpiamos la referencia en el usuario
-  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {    
     await userManager.updateOne(
       { _id: userId },
       { $pull: { FCTM_documents: id } } // Extrae el ID del array FCTM_documents
