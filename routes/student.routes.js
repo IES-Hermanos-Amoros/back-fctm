@@ -7,6 +7,9 @@ const { isSelf } = require('../middlewares/isSelf.mw');
 
 router.get('/', protect, restrictTo("ADMINISTRADOR", "PROFESOR", "EMPRESA"), studentController.getAllStudents);
 
+// Actualización masiva de aptitudes
+router.patch('/bulk-update', protect, restrictTo("ADMINISTRADOR", "PROFESOR"), studentController.bulkUpdateSkills);
+
 //Logueado y ser admin, teacher, company o student propio (un student no puede acceder a los detalles de otros students)
 router.get('/:id', protect, isSelf(["ADMINISTRADOR", "PROFESOR", "EMPRESA"], "id"), studentController.getStudentById);
 
