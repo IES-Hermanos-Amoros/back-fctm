@@ -12,6 +12,29 @@ exports.getAllStudents = wrapAsync(async (req, res, next) => {
   }
 })
 
+// Actualizar masivamente aptitudes (skills) de alumnos
+exports.bulkUpdateSkills = wrapAsync(async (req, res, next) => {
+  try {
+    const { ids, skills } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return next(new AppError("Debe proporcionar un array de IDs de alumnos", 400));
+    }
+    if (!skills || !Array.isArray(skills)) {
+      return next(new AppError("Debe proporcionar un array de aptitudes", 400));
+    }
+
+    const result = await userService.bulkUpdateSkills(ids, skills);
+
+    res.status(200).json({
+      message: 'Aptitudes actualizadas correctamente',
+      data: result,
+    });
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+});
+
 // Mostrar un alumno por ID
 exports.getStudentById = wrapAsync(async (req, res, next) => {
   try {
