@@ -58,5 +58,14 @@ exports.create = async({
 //Editar accion
 exports.update = async(id,datos) => await actionModel.findByIdAndUpdate(id,datos, {new:true})
 
-//Eliminar accion
-exports.remove = async(id) => await actionModel.findByIdAndDelete(id)
+//Eliminar accion (Modificado)
+exports.remove = async (id) => {
+    const actionDeleted = await actionModel.findByIdAndDelete(id)
+    if (actionDeleted) {
+        await userModel.updateMany(
+            { FCTM_actions: id }, 
+            { $pull: { FCTM_actions: id } }
+        )
+    }
+    return actionDeleted
+};

@@ -41,6 +41,10 @@ exports.getById = async (id) => {
             select: "_id FCTM_skill_name FCTM_skill_verified",
             match: { FCTM_skill_verified: true }
         })
+        .populate({
+            path: "FCTM_actions",
+            options: { sort: { FCTM_action_datetime: -1 } } // Ordenadas por fecha de la acción
+        })
 }
 
 /*
