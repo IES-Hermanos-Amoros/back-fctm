@@ -41,6 +41,12 @@ const fctManagerSchema = new Schema({
         default: []
     }],
 
+    FCTM_documents: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DocumentManager",
+        default: []
+    }],
+
     FCTM_inserted_date: { type: Date, default: Date.now },
     FCTM_updated_date: { type: Date, default: Date.now }
 });

@@ -82,6 +82,13 @@ documentSchema.virtual("oferta_relacionada", {
    // justOne: true                 // Normalmente un documento pertenece a una sola oferta
 });
 
+// 🔥 Virtual: FCT que contienen este documento
+documentSchema.virtual("fct_relacionada", {
+    ref: "fctManager",
+    localField: "_id",
+    foreignField: "FCTM_documents",
+});
+
 // Asegúrate de tener esto (si no lo tienes ya) para que los virtuales se vean:
 documentSchema.set("toJSON", { virtuals: true });
 documentSchema.set("toObject", { virtuals: true });

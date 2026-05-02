@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const ActionManager = require('../models/actionManager.model') // Importante para el populate
 const userManager = require('../models/userManager.model') // Importante para la búsqueda de usuarios
 const jobOfferManager = require('../models/jobOfferManager.model') // Importante para actualizar ofertas de empleo
+const fctManager = require('../models/fctManager.model') // Importante para actualizar FCTs
 
 //devolver documentos filtrados por perfil
 exports.getAll = async userProfile => {
@@ -86,8 +87,7 @@ exports.update = async (id, datos) =>
   await documentModel.findByIdAndUpdate(id, datos, { new: true })
 
 //eliminar documento
-exports.remove = async (id, userId = null) => {
-  //await documentModel.findByIdAndDelete(id)
+exports.remove = async (id, userId = null, fctId = null) => {
   // 1. Eliminamos el documento físicamente de la colección de documentos
   const deletedDoc = await documentModel.findByIdAndDelete(id)
 
@@ -99,12 +99,17 @@ exports.remove = async (id, userId = null) => {
   if (userId && mongoose.Types.ObjectId.isValid(userId)) {
     await userManager.updateOne(
       { _id: userId },
-      { $pull: { FCTM_documents: id } } // Extrae el ID del array FCTM_documents
+      { $pull: { FCTM_documents: id } }
     )
   }
 
-  // Opcional: Si el documento también podía estar en una oferta de trabajo,
-  // podrías añadir aquí una lógica similar para jobOfferManager si fuera necesario.
+  // 3. Si se proporcionó un fctId, limpiamos la referencia en la FCT
+  if (fctId && mongoose.Types.ObjectId.isValid(fctId)) {
+    await fctManager.updateOne(
+      { _id: fctId },
+      { $pull: { FCTM_documents: id } }
+    )
+  }
 
   return deletedDoc
 }
@@ -166,6 +171,16 @@ exports.insertManyDocuments = async (files, datos) => {
 
       await jobOfferManager.updateOne(
         { _id: datos.jobOfferId },
+        { $push: { FCTM_documents: { $each: docIds } } }
+      )
+    }
+
+    //si hay fctId, actualizar lista de documentos en FCT
+    if (datos.fctId) {
+      const docIds = insertedDocs.map(doc => doc._id)
+
+      await fctManager.updateOne(
+        { _id: datos.fctId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }

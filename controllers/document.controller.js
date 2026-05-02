@@ -72,9 +72,9 @@ exports.editDocumentById = wrapAsync(async (req, res, next) => {
 
 exports.deleteDocumentById = wrapAsync(async (req, res, next) => {
   const { id } = req.params
-  const { userId } = req.query; 
+  const { userId, fctId } = req.query;
 
-  const documentDeleted = await DocumentService.remove(id,userId)
+  const documentDeleted = await DocumentService.remove(id, userId, fctId)
   if (documentDeleted) {
     res.status(200).json(documentDeleted)
   } else {
