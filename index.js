@@ -41,6 +41,7 @@ const actionRoutes = require("./routes/action.routes")
 const dummyRoutes = require("./routes/dummy.routes");
 const skillRoutes = require("./routes/skill.routes");
 const categoryRoutes = require("./routes/category.routes");
+const statsRoutes = require("./routes/stats.routes");
 const enumRoutes = require("./routes/enum.routes")
 //LOGINSAOFCTM INI
 const authRoutes = require("./routes/auth.routes");
@@ -105,6 +106,8 @@ app.use(`/api/${process.env.API_VERSION}/actions`, actionRoutes);
 app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
 app.use(`/api/${process.env.API_VERSION}/skills`, skillRoutes);
 app.use(`/api/${process.env.API_VERSION}/categories`, categoryRoutes);
+app.use(`/api/${process.env.API_VERSION}/stats`, statsRoutes);
+
 
 //LOGINSAOFCTM INI
 app.use(`/api/${process.env.API_VERSION}/auth`,authRoutes)
