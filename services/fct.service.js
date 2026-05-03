@@ -275,3 +275,37 @@ exports.updateFctmFields = async (id, data) => {
     throw error;
   }
 };
+
+// Relacionar un documento a la FCT 
+exports.addDocument = async (fctId, documentId) => {
+  try {
+    const updatedFct = await fctManager.findByIdAndUpdate(
+      fctId,
+      { $push: { FCTM_documents: documentId } },
+      { new: true, runValidators: true }
+    ).populate('FCTM_documents'); 
+
+    if (!updatedFct) throw new Error("FCT no encontrada");
+    return updatedFct;
+  } catch (error) {
+    console.error("Error en fctService.addDocument:", error);
+    throw error;
+  }
+};
+
+// Limpieza de IDs
+exports.removeDocument = async (fctId, documentId) => {
+  try {
+    const updatedFct = await fctManager.findByIdAndUpdate(
+      fctId,
+      { $pull: { FCTM_documents: documentId } }, 
+      { new: true }
+    );
+
+    if (!updatedFct) throw new Error("FCT no encontrada");
+    return updatedFct;
+  } catch (error) {
+    console.error("Error en fctService.removeDocument:", error);
+    throw error;
+  }
+};

@@ -31,4 +31,20 @@ router.patch(
   fctController.editFct
 )
 
+// PATCH -> Relacionar un documento a la FCT
+router.patch(
+  "/:id/add-document",
+  protect,
+  isFctOwner(["ADMINISTRADOR", "PROFESOR"]),
+  fctController.addDocumentToFct
+);
+
+// PATCH -> Desvincular un documento (la "limpieza" de IDs huérfanos)
+router.patch(
+  "/:id/remove-document/:documentId",
+  protect,
+  isFctOwner(["ADMINISTRADOR", "PROFESOR"]),
+  fctController.removeDocumentFromFct
+);
+
 module.exports = router

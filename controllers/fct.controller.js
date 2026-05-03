@@ -37,3 +37,30 @@ exports.editFct = wrapAsync(async (req, res, next) => {
         next(new AppError("No se pudo actualizar la FCT", 400))
     }
 })
+
+// Para relacionar el documento
+exports.addDocumentToFct = wrapAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const { documentId } = req.body;
+
+    const updatedFct = await fctService.addDocument(id, documentId);
+    
+    if (updatedFct) {
+        res.status(200).json(updatedFct);
+    } else {
+        next(new AppError("No se pudo vincular el documento", 400));
+    }
+});
+
+// Para la "limpieza" (Borrar la relación)
+exports.removeDocumentFromFct = wrapAsync(async (req, res, next) => {
+    const { id, documentId } = req.params;
+
+    const updatedFct = await fctService.removeDocument(id, documentId);
+    
+    if (updatedFct) {
+        res.status(200).json({ message: "Relación eliminada", updatedFct });
+    } else {
+        next(new AppError("No se pudo desvincular el documento", 400));
+    }
+});
