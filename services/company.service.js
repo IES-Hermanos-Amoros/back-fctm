@@ -25,6 +25,10 @@ exports.getById = async (id) => {
             select: "FCTM_job_title FCTM_job_start_date FCTM_job_end_date FCTM_job_status FCTM_inserted_date",
             options: { sort: { FCTM_inserted_date: -1 } }
         }).populate({
+            path: "FCTM_actions",
+            select: "FCTM_action_title FCTM_action_type FCTM_action_datetime FCTM_action_notes FCTM_inserted_date FCTM_documents",
+            options: { sort: { FCTM_action_datetime: -1 } }
+        }).populate({
           path: "FCTM_documents",
           match: { FCTM_document_type: "AVATAR" },
           options: {

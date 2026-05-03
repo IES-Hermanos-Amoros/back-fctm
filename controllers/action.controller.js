@@ -24,8 +24,12 @@ exports.getActionById = wrapAsync(async (req,res) => {
 
 //Crear una nueva acción
 exports.newAction = wrapAsync(async (req,res) => {
+    const payload = {
+        ...req.body,
+        FCTM_created_by: req.body?.FCTM_created_by || req.user?.id
+    }
 
-    const actionCreado = await ActionService.create(req.body, req.files)//ERROR req.files={})
+    const actionCreado = await ActionService.create(payload, req.files)//ERROR req.files={})
     if(actionCreado){
         res.status(200).json(actionCreado)
     } else {
