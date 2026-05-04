@@ -106,3 +106,19 @@ exports.update = async (id, data) => {
 
   return await company.save();
 };
+
+exports.bulkUpdate = async (ids, categoryIds) => {
+    try {
+        return await userManagerModel.updateMany(
+            { _id: { $in: ids } },
+            { 
+                $addToSet: { 
+                    FCTM_company_category: { $each: categoryIds } 
+                },
+                $set: { FCTM_updated_date: new Date() }
+            }
+        );
+    } catch (err) {
+        throw err;
+    }
+};

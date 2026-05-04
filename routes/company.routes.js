@@ -13,4 +13,6 @@ router.get("/:id", protect, isSelf(["ADMINISTRADOR", "PROFESOR", "ALUMNO"], "id"
 //Logueado y ser admin, teacher o company propio (una empresa no debe poder modificar los detalles de otras empresas) (un alumno tampoco podrá modificar nada de una empresa, sólo ver los detalles)
 router.patch("/:id", protect, isSelf(["ADMINISTRADOR", "PROFESOR"], "id"), companyController.editCompanyById);
 
+router.patch("/bulk-update", protect, restrictTo("ADMINISTRADOR", "PROFESOR"), companyController.bulkUpdateCompanies);
+
 module.exports = router;

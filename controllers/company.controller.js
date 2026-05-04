@@ -43,3 +43,22 @@ return next(new AppError("Compañía no encontrada", 404));
 
 res.status(200).json(companyUpdated);
 })
+
+exports.bulkUpdateCompanies = wrapAsync(async (req, res, next) => {
+    const { ids, categoryIds } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return next(new AppError("Se requiere un array de IDs de empresas", 400));
+    }
+
+    if (!Array.isArray(categoryIds) || categoryIds.length === 0) {
+        return next(new AppError("Se requiere un array de IDs de familias profesionales", 400));
+    }
+
+    const result = await CompanyService.bulkUpdate(ids, categoryIds);
+
+    res.status(200).json({
+        success: true,
+        message: `${result.modifiedCount} empresas actualizadas correctamente`
+    });
+});
