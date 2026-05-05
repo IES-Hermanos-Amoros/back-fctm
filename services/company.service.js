@@ -86,6 +86,19 @@ exports.bulkUpdateSkills = async (ids, skills) => {
   }
 };
 
+exports.bulkUpdateCategories = async (ids, categories) => {
+  try {
+    const result = await userManagerModel.updateMany(
+      { _id: { $in: ids }, SAO_profile: "EMPRESA" },
+      { $addToSet: { FCTM_company_category: { $each: categories } } }
+    );
+    return result;
+  } catch (error) {
+    console.error("Error en companyService.bulkUpdateCategories:", error);
+    throw error;
+  }
+};
+
 exports.update = async (id, data) => {
   const { password, newPassword, ...otherData } = data;
   const filteredData = {};

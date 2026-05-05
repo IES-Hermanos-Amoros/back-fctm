@@ -8,7 +8,8 @@ const { isSelf } = require("../middlewares/isSelf.mw");
 router.get("/", protect, restrictTo("ADMINISTRADOR", "PROFESOR", "ALUMNO"), companyController.getAllCompanies);
 
 // Actualización masiva de aptitudes para empresas
-router.patch('/bulk-update', protect, restrictTo("ADMINISTRADOR", "PROFESOR"), companyController.bulkUpdateSkills);
+router.patch('/bulk-update-skills', protect, restrictTo("ADMINISTRADOR", "PROFESOR"), companyController.bulkUpdateSkills);
+router.patch('/bulk-update-categories', protect, restrictTo("ADMINISTRADOR", "PROFESOR"), companyController.bulkUpdateCategories);
 
 //Logueado y ser admin, teacher, student o company propio (una empresa no debe poder acceder a los detalles de otras empresas)
 router.get("/:id", protect, isSelf(["ADMINISTRADOR", "PROFESOR", "ALUMNO"], "id"), companyController.getCompanyById);

@@ -48,6 +48,29 @@ exports.bulkUpdateSkills = wrapAsync(async (req, res, next) => {
   }
 });
 
+exports.bulkUpdateCategories = wrapAsync(async (req, res, next) => {
+  try {
+    const { ids, categoryIds } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return next(new AppError("Debe proporcionar un array de IDs de empresas", 400));
+    }
+
+    if (!categoryIds || !Array.isArray(categoryIds) || categoryIds.length === 0) {
+      return next(new AppError("Debe proporcionar un array de familias profesionales", 400));
+    }
+
+    const result = await CompanyService.bulkUpdateCategories(ids, categoryIds);
+
+    res.status(200).json({
+      message: 'Familias Profesionales de empresas actualizadas correctamente',
+      data: result,
+    });
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+});
+
 exports.editCompanyById = wrapAsync(async (req, res, next) => {
 const { id } = req.params;
 const companyUpdated = await CompanyService.update(id, req.body);
