@@ -25,6 +25,29 @@ exports.getCompanyById = wrapAsync(async (req,res,next) => {
     }
 })
 
+exports.bulkUpdateSkills = wrapAsync(async (req, res, next) => {
+  try {
+    const { ids, skills } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return next(new AppError("Debe proporcionar un array de IDs de empresas", 400));
+    }
+
+    if (!skills || !Array.isArray(skills) || skills.length === 0) {
+      return next(new AppError("Debe proporcionar un array de aptitudes", 400));
+    }
+
+    const result = await CompanyService.bulkUpdateSkills(ids, skills);
+
+    res.status(200).json({
+      message: 'Aptitudes de empresas actualizadas correctamente',
+      data: result,
+    });
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+});
+
 exports.editCompanyById = wrapAsync(async (req, res, next) => {
 const { id } = req.params;
 const companyUpdated = await CompanyService.update(id, req.body);
