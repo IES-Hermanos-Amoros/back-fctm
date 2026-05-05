@@ -718,7 +718,8 @@ exports.teachersSinc = async(io,res,userData,result) => {
                     const $ = cheerio.load(content);
                     
                     const datos = extraerDatosProfesorAdmin($)
-                    if(datos){
+                    //Solución error 073993175J - BAÑON RODRIGUEZ, VERA cuya ficha en SAO está vacía
+                    if(datos && datos.SAO_id && datos.SAO_id != ''){
                         progress += incremento;
                         io.emit('progress-update', { progress, message:`Cargando profesor '${datos.SAO_profile + ": " + datos.SAO_id + " " +  datos.SAO_name}'...` });
                         //console.log(datos)

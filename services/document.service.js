@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const ActionManager = require('../models/actionManager.model') // Importante para el populate
 const userManager = require('../models/userManager.model') // Importante para la búsqueda de usuarios
 const jobOfferManager = require('../models/jobOfferManager.model') // Importante para actualizar ofertas de empleo
+const fctManager = require('../models/fctManager.model') // Importante para actualizar FCTs
 
 //devolver documentos filtrados por perfil
 exports.getAll = async userProfile => {
@@ -86,7 +87,32 @@ exports.update = async (id, datos) =>
   await documentModel.findByIdAndUpdate(id, datos, { new: true })
 
 //eliminar documento
-exports.remove = async id => await documentModel.findByIdAndDelete(id)
+exports.remove = async (id, userId = null, fctId = null) => {
+  // 1. Eliminamos el documento físicamente de la colección de documentos
+  const deletedDoc = await documentModel.findByIdAndDelete(id)
+
+  if (!deletedDoc) {
+    throw new Error('Documento no encontrado')
+  }
+
+  // 2. Si se proporcionó un userId, limpiamos la referencia en el usuario
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    await userManager.updateOne(
+      { _id: userId },
+      { $pull: { FCTM_documents: id } }
+    )
+  }
+
+  // 3. Si se proporcionó un fctId, limpiamos la referencia en la FCT
+  if (fctId && mongoose.Types.ObjectId.isValid(fctId)) {
+    await fctManager.updateOne(
+      { _id: fctId },
+      { $pull: { FCTM_documents: id } }
+    )
+  }
+
+  return deletedDoc
+}
 
 //INCORRECTO
 //insertar varios documentos
@@ -107,21 +133,23 @@ exports.insertManyDocuments = async (files, datos) => {
       uploadedAt: new Date(),
       user: userId || null,
     }))*/
+    // visible_to_profiles puede llegar como string único o como array
+    let perfiles = datos?.visible_to_profiles || ['ADMINISTRADOR']
+    if (typeof perfiles === 'string') perfiles = [perfiles]
+
     const docsToInsert = files.map(file => ({
-      FCTM_document_name: file.originalname,
+      // Usar el nombre del input si existe; si no, el nombre del archivo
+      FCTM_document_name: datos?.name || file.originalname,
 
       FCTM_document_description: datos?.description || '',
 
       FCTM_document_type: datos?.type || 'GENERAL',
 
-      FCTM_document_created_by: datos?.createdBy, //userId,
+      FCTM_document_created_by: datos?.createdBy,
 
       FCTM_document_url: `/uploads/${file.filename}`,
 
-      FCTM_visible_to_profiles: datos?.visible_to_profiles || ['ADMINISTRADOR'],
-
-      /*FCTM_inserted_date: new Date(),
-      FCTM_updated_date: new Date()*/
+      FCTM_visible_to_profiles: perfiles,
     }))
 
     //insertar los documentos de una vez
@@ -143,6 +171,16 @@ exports.insertManyDocuments = async (files, datos) => {
 
       await jobOfferManager.updateOne(
         { _id: datos.jobOfferId },
+        { $push: { FCTM_documents: { $each: docIds } } }
+      )
+    }
+
+    //si hay fctId, actualizar lista de documentos en FCT
+    if (datos.fctId) {
+      const docIds = insertedDocs.map(doc => doc._id)
+
+      await fctManager.updateOne(
+        { _id: datos.fctId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }

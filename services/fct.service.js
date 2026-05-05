@@ -118,13 +118,28 @@ exports.findById = async (id, user) => {
       .populate({
         path: 'FCTM_reviews',
         options: { sort: { FCTM_review_date: -1 } },
-        // --- NUEVO: Populate del usuario dentro de la reseña ---
         populate: {
           path: 'FCTM_user_id',
-          select: 'SAO_name' // Solo traemos el nombre para optimizar
+          select: 'SAO_name'
         }
       })
       .lean();
+
+    // 2. Asegurar que FCTM_documents existe y poblar documentos
+    if (fct) {
+      const documentModel = require('../models/documentManager.model');
+      // Si no tiene el campo o es null, inicializar como array vacío
+      if (!fct.FCTM_documents) {
+        fct.FCTM_documents = [];
+      }
+      // Si tiene documentos, poblarlos
+      if (fct.FCTM_documents.length > 0) {
+        const documents = await documentModel.find({
+          _id: { $in: fct.FCTM_documents }
+        }).select('FCTM_document_name FCTM_document_type FCTM_document_url FCTM_inserted_date').lean();
+        fct.FCTM_documents = documents;
+      }
+    }
     
     if (!fct) return null;
 

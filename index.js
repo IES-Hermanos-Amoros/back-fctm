@@ -1,9 +1,24 @@
-require("dotenv").config();
+//require("dotenv").config();
+const dotenv = require('dotenv')
 //const session = require("express-session");
 const methodOverride = require("method-override");
 const express = require("express");
 const app = express();
 const path = require("path");
+// Captura el entorno (por defecto 'development')
+const env = process.env.NODE_ENV || 'development';
+const envPath = path.resolve(process.cwd(), `.env.${env}`);
+const result = dotenv.config({ path: envPath });
+
+if (result.error) {
+  console.error(`❌ No se pudo encontrar el archivo: .env.${env}`);
+  // Opcional: cargar el .env normal si falla el específico
+  dotenv.config(); 
+}
+console.log(`🚀 ENTORNO CARGADO: ${env}`);
+//console.log(`📦 MONGO DB ATLAS URL: ${process.env.MONGODB_ATLAS}`);
+
+
 const port = process.env.PORT || process.env.PUERTO;
 
 const socketIo = require("socket.io");
@@ -26,6 +41,7 @@ const actionRoutes = require("./routes/action.routes")
 const dummyRoutes = require("./routes/dummy.routes");
 const skillRoutes = require("./routes/skill.routes");
 const categoryRoutes = require("./routes/category.routes");
+const statsRoutes = require("./routes/stats.routes");
 const enumRoutes = require("./routes/enum.routes")
 //LOGINSAOFCTM INI
 const authRoutes = require("./routes/auth.routes");
@@ -90,6 +106,8 @@ app.use(`/api/${process.env.API_VERSION}/actions`, actionRoutes);
 app.use(`/api/${process.env.API_VERSION}/dummy`, dummyRoutes);
 app.use(`/api/${process.env.API_VERSION}/skills`, skillRoutes);
 app.use(`/api/${process.env.API_VERSION}/categories`, categoryRoutes);
+app.use(`/api/${process.env.API_VERSION}/stats`, statsRoutes);
+
 
 //LOGINSAOFCTM INI
 app.use(`/api/${process.env.API_VERSION}/auth`,authRoutes)

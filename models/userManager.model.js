@@ -82,7 +82,7 @@ const userManagerSchema = new mongoose.Schema({
         default: true
     },
 
-    FCTM_contact_email: {
+    /*FCTM_contact_email: {
         type: String,
         trim: true,
         lowercase: true,
@@ -93,6 +93,19 @@ const userManagerSchema = new mongoose.Schema({
                 // ✅ permitir null o vacío
                 if (value === null || value === '') return true
                 // ✅ validar solo si hay valor
+                return validator.isEmail(value)
+            },
+            message: "El email introducido no es válido"
+        }
+    },*/
+    FCTM_contact_email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        default: null,
+        validate: {
+            validator: function (value) {
+                if (value === null || value === '') return true
                 return validator.isEmail(value)
             },
             message: "El email introducido no es válido"
@@ -156,6 +169,9 @@ userManagerSchema.pre('save', function (next) {
     if (this.isNew) {
         this.FCTM_inserted_date = new Date();
     }
+    if (this.FCTM_contact_email === '') {
+        this.FCTM_contact_email = null;
+    }
     next();
 });
 
@@ -164,6 +180,16 @@ userManagerSchema.pre('findOneAndUpdate', function (next) {
     this.set({ FCTM_updated_date: new Date() });
     next();
 });
+
+//Solución problemas de sincronización con emails NULL
+//Crea el índice parcial justo antes de definir el model
+userManagerSchema.index(
+  { FCTM_contact_email: 1 }, 
+  { 
+    unique: true, 
+    partialFilterExpression: { FCTM_contact_email: { $type: "string" } } 
+  }
+);
 
 const userManager = mongoose.model('UserManager', userManagerSchema);
 
@@ -185,9 +211,19 @@ userManager.insertManyUsers = async function(userDataList, result){
 
 userManager.insertUpdateManyUsers = async function(userDataListToInsert, userDataListToUpdate, result) {
     try {
+        // 1. LIMPIEZA DE DUPLICADOS EN LOS NUEVOS (Memoria)
+        // Si el SAO manda por error el mismo ID dos veces en el array de insert,
+        // esto se queda solo con la última ocurrencia.
+        const cleanInsertList = Array.from(
+            new Map(userDataListToInsert.map(user => [user.SAO_id, user])).values()
+        );
+
+        // 2. Ejecutamos las operaciones
+        // Usamos { ordered: false } en insertMany para que si un ID ya existe en la DB,
+        // no detenga la inserción de los demás.
         // Ejecutamos ambas operaciones en paralelo con Promise.all
         const [insertResult, updateResult] = await Promise.all([
-            userManager.insertMany(userDataListToInsert),  // Operación de inserción
+            userManager.insertMany(userDataListToInsert, { ordered: false }),  // Operación de inserción
             userManager.bulkWrite(
                 userDataListToUpdate.map(user => {
                     // Para cada usuario en el array, construimos la operación de actualización
@@ -227,6 +263,16 @@ userManager.insertUpdateManyUsers = async function(userDataListToInsert, userDat
         // Retornamos el resultado con ambos objetos
         result(null, datos);
     } catch (err) {
+        // 3. MANEJO ESTRATÉGICO DE ERRORES
+        // Si el error es de duplicados (code 11000), pero se insertaron algunos registros,
+        // MongoDB lo lanza como error. Aquí podrías decidir si lo devuelves o lo ignoras.
+        if (err.code === 11000 || err.name === 'MongoBulkWriteError') {
+            console.warn("Se detectaron duplicados, pero el resto se procesó.");
+            return result(null, { 
+                partialError: err.message, 
+                insertedCount: err.result?.nInserted || 0 
+            });
+        }
         // Si ocurre un error, lo manejamos aquí
         result(err, null);
     }

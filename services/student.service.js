@@ -56,6 +56,19 @@ exports.findById = async (id) => {
   }
 };
 
+exports.bulkUpdateSkills = async (ids, skills) => {
+  try {
+    const result = await userManager.updateMany(
+      { _id: { $in: ids } },
+      { $addToSet: { FCTM_skills: { $each: skills } } }
+    );
+    return result;
+  } catch (error) {
+    console.error("Error en userService.bulkUpdateSkills:", error);
+    throw error;
+  }
+};
+
 /*
 exports.updateFctmFields = async (id, data) => {
   try {

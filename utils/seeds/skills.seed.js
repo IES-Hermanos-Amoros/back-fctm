@@ -19,7 +19,7 @@ const ejecutar = async () => {
         console.log("Base de datos lista para sembrar.");
 
         // 3. Obtener o Crear un usuario Admin para asignar las skills
-        let adminUser = await User.findOne({ SAO_username: "48470726C" });
+        let adminUser = await User.findOne({ SAO_username: "admin" });
         
         if (!adminUser) {
             console.log("Admin no encontrado, creando uno temporal para la seed...");
