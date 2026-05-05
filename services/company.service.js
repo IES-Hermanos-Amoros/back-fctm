@@ -73,6 +73,19 @@ exports.update = async (id,datos) => {
     return await userManagerModel.findByIdAndUpdate(id, updateFields, { new:true })
 }*/
 
+exports.bulkUpdateSkills = async (ids, skills) => {
+  try {
+    const result = await userManagerModel.updateMany(
+      { _id: { $in: ids }, SAO_profile: "EMPRESA" },
+      { $addToSet: { FCTM_skills: { $each: skills } } }
+    );
+    return result;
+  } catch (error) {
+    console.error("Error en companyService.bulkUpdateSkills:", error);
+    throw error;
+  }
+};
+
 exports.update = async (id, data) => {
   const { password, newPassword, ...otherData } = data;
   const filteredData = {};
