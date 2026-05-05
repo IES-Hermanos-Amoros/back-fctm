@@ -1,5 +1,8 @@
 const ActionService = require("../services/action.service")
+const CompanyService = require("../services/company.service")
 const { wrapAsync } = require("../utils/functions")
+const mongoose = require("mongoose");
+const CompanyModel = require("../models/userManager.model"); // El modelo que uses para empresas
 
 //Todas las acciones
 exports.getAllActions = wrapAsync(async (req,res) => {
@@ -47,12 +50,21 @@ exports.editActionById = wrapAsync(async (req,res) => {
     }
 })
 
-exports.deleteActionById = wrapAsync(async (req,res) => {
-    const { id } = req.params
-    const actionDeleted = await ActionService.remove(id)
-    if(actionDeleted){
-        res.status(200).json(actionDeleted)
+exports.deleteActionById = wrapAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const { companyId } = req.query;
+
+    const actionDeleted = await ActionService.remove(id);
+
+    if (actionDeleted) {
+        if (companyId) {
+            // USAR EL MODELO DIRECTAMENTE
+            await CompanyModel.findByIdAndUpdate(companyId, {
+                $pull: { FCTM_actions: new mongoose.Types.ObjectId(id) }
+            });
+        }
+        return res.status(200).json(actionDeleted);
     } else {
-        next(new AppError("Error al eliminar la acción",500))
+        return next(new AppError("Error al eliminar la acción", 500));
     }
-})
+});
