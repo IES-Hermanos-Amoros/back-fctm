@@ -7,7 +7,7 @@ const { insertManyDocuments } = require("./document.service")
 exports.getAll = () => actionModel.find()
 
 //Obtener accion por id
-exports.getById = async(id) => actionModel.findById(id)
+exports.getById = async(id) => actionModel.findById(id).populate('FCTM_documents')
 
 //Crear una nueva accion
 exports.create = async({
