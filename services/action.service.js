@@ -30,8 +30,6 @@ exports.create = async({
         visible_to_profiles: ["ADMINISTRADOR", "PROFESOR"]
     }
 
-    console.log(files)
-
     if(files && files.length > 0){
         filesID = await insertManyDocuments(files, datosDocumentos)
     }
