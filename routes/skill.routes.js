@@ -11,14 +11,27 @@ router.get("/search", skillController.searchSkills);
 // Obtener todas las aptitudes (Filtradas por verificadas en el servicio)
 router.get("/", skillController.getAllVerifiedSkills);
 // Obtener todas las aptitudes no verificadas (para admin)
-router.get("/unverified",protect, restrictTo("ADMINISTRADOR","PROFESOR"), skillController.getAllNotVerifiedSkills);
+router.get(
+  "/unverified",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR"),
+  skillController.getAllNotVerifiedSkills,
+);
 
 // Actualización masiva de aptitudes
 router.patch(
-    "/bulk-verify", 
-    protect, 
-    restrictTo("ADMINISTRADOR","PROFESOR"), 
-    skillController.bulkVerifySkills
+  "/bulk-verify",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR"),
+  skillController.bulkVerifySkills,
+);
+
+// Eliminación masiva de aptitudes
+router.delete(
+  "/bulk-delete",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR"),
+  skillController.bulkDeleteSkills,
 );
 
 // Obtener una aptitud específica por ID
@@ -27,11 +40,7 @@ router.get("/:id", skillController.getSkillById);
 // Crear una nueva aptitud
 router.post("/", skillController.createSkill);
 
-router.post(
-    "/ensure",
-    protect,
-    skillController.ensureSkills
-);
+router.post("/ensure", protect, skillController.ensureSkills);
 
 // Editar una aptitud (Cambiado a patch para ser fiel a tu ejemplo)
 router.patch("/:id", skillController.editSkillById);
