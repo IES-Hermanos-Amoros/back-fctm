@@ -87,7 +87,7 @@ exports.update = async (id, datos) =>
   await documentModel.findByIdAndUpdate(id, datos, { new: true })
 
 //eliminar documento
-exports.remove = async (id, userId = null, fctId = null) => {
+exports.remove = async (id, userId = null, fctId = null, companyId = null) => {
   // 1. Eliminamos el documento físicamente de la colección de documentos
   const deletedDoc = await documentModel.findByIdAndDelete(id)
 
@@ -107,6 +107,14 @@ exports.remove = async (id, userId = null, fctId = null) => {
   if (fctId && mongoose.Types.ObjectId.isValid(fctId)) {
     await fctManager.updateOne(
       { _id: fctId },
+      { $pull: { FCTM_documents: id } }
+    )
+  }
+
+  // 4. Si se proporcionó un companyId, limpiamos la referencia en la empresa
+  if (companyId && mongoose.Types.ObjectId.isValid(companyId)) {
+    await userManager.updateOne(
+      { _id: companyId },
       { $pull: { FCTM_documents: id } }
     )
   }
@@ -181,6 +189,16 @@ exports.insertManyDocuments = async (files, datos) => {
 
       await fctManager.updateOne(
         { _id: datos.fctId },
+        { $push: { FCTM_documents: { $each: docIds } } }
+      )
+    }
+
+    //si hay companyId, actualizar lista de documentos en la empresa
+    if (datos.companyId) {
+      const docIds = insertedDocs.map(doc => doc._id)
+
+      await userManager.updateOne(
+        { _id: datos.companyId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }

@@ -30,12 +30,10 @@ exports.getById = async (id) => {
             options: { sort: { FCTM_action_datetime: -1 } }
         }).populate({
           path: "FCTM_documents",
-          match: { FCTM_document_type: "AVATAR" },
+          select: "_id FCTM_document_name FCTM_document_url FCTM_document_type FCTM_inserted_date",
           options: {
             sort: { FCTM_inserted_date: -1 },
-            limit: 1
-          },
-          select: "FCTM_document_url"
+          }
         }).populate({
                 path: "FCTM_company_category",
                 select: "_id FCTM_category_name" // Solo traemos lo necesario
