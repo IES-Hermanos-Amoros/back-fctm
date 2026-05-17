@@ -28,6 +28,13 @@ router.patch(
   reviewController.bulkValidateReviews
 )
 
+router.delete(
+  "/all-delete",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR"),
+  reviewController.allDeleteReviews
+)
+
 //Logueado y ser admin, teacher o student (el que creó la reseña... el owner)
 router.get(
   "/:id",

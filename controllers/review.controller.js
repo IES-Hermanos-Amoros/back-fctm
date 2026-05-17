@@ -87,6 +87,27 @@ exports.bulkValidateReviews = wrapAsync(async (req, res, next) => {
   }
 });
 
+exports.allDeleteReviews = wrapAsync(async (req, res, next) => {
+  const { ids } = req.body;
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Se requiere un array de IDs' });
+  }
+
+  try {
+    const result = await reviewService.allDelete(ids);
+
+    res.status(200).json({
+      success: true,
+      message: `${result.deletedCount} reseñas eliminadas correctamente`
+    });
+
+  } catch (error) {
+    console.error("Error en allDelete:", error);
+    res.status(500).json({ error: 'Error en el eliminado masivo: ' + error.message });
+  }
+});
+
 exports.deleteReviewById = wrapAsync(async (req, res, next) => {
   try {
     const { id } = req.params;

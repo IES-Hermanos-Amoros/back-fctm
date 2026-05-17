@@ -73,10 +73,18 @@ exports.delete = async(id, fctId = null) => {
 }
 
 
-// Actualización masiva de aptitudes
+// Actualización masiva
 exports.bulkUpdate = async (ids) => {
    return await reviewModel.updateMany(
       { _id: { $in: ids } }, 
       { $set: { FCTM_review_verified: true } }
     );
+};
+
+exports.allDelete = async (ids) => {
+   await fctManagerModel.updateMany(
+      { FCTM_reviews: { $in: ids } },
+      { $pullAll: { FCTM_reviews: ids } }
+   );
+   return await reviewModel.deleteMany({ _id: { $in: ids } });
 };
