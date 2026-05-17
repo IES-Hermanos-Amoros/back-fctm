@@ -21,6 +21,13 @@ router.get(
   reviewController.getAllNotVerifiedReviews,
 );
 
+router.get(
+  "/reviews",
+  protect,
+  restrictTo("ADMINISTRADOR", "PROFESOR"),
+  reviewController.getGlobalReviewsList
+);
+
 router.patch(
   "/bulk-update",
   protect,

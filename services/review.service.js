@@ -88,3 +88,63 @@ exports.allDelete = async (ids) => {
    );
    return await reviewModel.deleteMany({ _id: { $in: ids } });
 };
+
+// Listado global cruzando datos de Empresa y Alumno para la vista de admin/profes
+exports.getGlobalReviews = async () => {
+    return await reviewModel.aggregate([
+        // Ordenar por fecha de inserción (de más nueva a más vieja)
+        { $sort: { FCTM_inserted_date: -1 } },
+
+        // Buscar a qué FCT pertenece esta reseña
+        {
+            $lookup: {
+                from: "fctmanagers", 
+                localField: "_id",
+                foreignField: "FCTM_reviews",
+                as: "fct_asociada"
+            }
+        },
+        { $unwind: { path: "$fct_asociada", preserveNullAndEmptyArrays: true } },
+
+        // Sacar los datos del Alumno (autor de la reseña)
+        {
+            $lookup: {
+                from: "usermanagers",
+                localField: "FCTM_user_id",
+                foreignField: "_id",
+                as: "alumno_datos"
+            }
+        },
+        { $unwind: { path: "$alumno_datos", preserveNullAndEmptyArrays: true } },
+
+        // Sacar la Empresa usando el CIF/ID de la FCT que hemos sacado antes
+        {
+            $lookup: {
+                from: "usermanagers",
+                localField: "fct_asociada.SAO_company_id",
+                foreignField: "SAO_id",
+                as: "empresa_datos"
+            }
+        },
+        { $unwind: { path: "$empresa_datos", preserveNullAndEmptyArrays: true } },
+
+        // Filtrar y limpiar los campos que se envían al Front
+        {
+            $project: {
+                _id: 1,
+                FCTM_review_title: 1,
+                FCTM_review_text: 1,
+                FCTM_review_rating: 1,
+                FCTM_review_date: 1,
+                FCTM_inserted_date: 1,
+                // Si la empresa tiene organización ponemos esa, si no, el nombre normal
+                empresa_nombre: { 
+                    $ifNull: [ "$empresa_datos.SAO_organization", "$empresa_datos.SAO_name", "Empresa no asignada" ] 
+                },
+                alumno_nombre: { 
+                    $ifNull: [ "$alumno_datos.SAO_name", "Alumno Anónimo" ] 
+                }
+            }
+        }
+    ]);
+};
