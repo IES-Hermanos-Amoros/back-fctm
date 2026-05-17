@@ -7,7 +7,7 @@ const { insertManyDocuments } = require("./document.service")
 exports.getAll = () => actionModel.find()
 
 //Obtener accion por id
-exports.getById = async(id) => actionModel.findById(id)
+exports.getById = async(id) => actionModel.findById(id).populate('FCTM_documents')
 
 //Crear una nueva accion
 exports.create = async({
@@ -29,8 +29,6 @@ exports.create = async({
         createdBy: FCTM_created_by,
         visible_to_profiles: ["ADMINISTRADOR", "PROFESOR"]
     }
-
-    console.log(files)
 
     if(files && files.length > 0){
         filesID = await insertManyDocuments(files, datosDocumentos)
