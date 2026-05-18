@@ -52,10 +52,14 @@ exports.createReview = async (req,res,next) => {
 exports.editReviewById = wrapAsync(async (req,res,next) => {
   try {
     const { id } = req.params;
-    const comment = req.body;
-    const review = await reviewService.update(id, comment);
+    const datosActualizados = {
+      ...req.body,
+      FCTM_review_verified: false //forzando el verified a false
+    }
+    //const comment = req.body;
+    const review = await reviewService.update(id, datosActualizados);
     if (!review) {
-      next(new AppError("No se encontró la reseña", 404));
+      return next(new AppError("No se encontró la reseña", 404));
     }
 
     res
