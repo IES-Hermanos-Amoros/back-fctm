@@ -10,6 +10,7 @@
  * Cada función puede ser asignada a un alumno diferente para 
  * implementar la lógica real
  */
+const JobOfferManager = require("../models/jobOfferManager.model");
 
 //Gestión de histórico de convenios
 exports.obtenerConvenios = async () => {
@@ -31,14 +32,43 @@ exports.obtenerFcts = async () => {
 
 //Análisis de demanda tecnológica
 exports.obtenerTopTecnologias = async () => {
-    // Simula un: .aggregate([{ $unwind: "$tags" }, { $sortByCount: "$tags" }, { $limit: 4 }])
-    return [
-        { name: 'React', value: 40 },
-        { name: 'Node.js', value: 30 },
-        { name: 'Python', value: 20 },
-        { name: 'Java', value: 10 },
-        { name: 'Ensamblador', value: 2 }
-    ];
+    const offers = await JobOfferManager.find({}, "FCTM_skills")
+        .populate({
+            path: "FCTM_skills",
+            select: "FCTM_skill_name FCTM_skill_verified",
+        })
+        .lean();
+
+    const countsBySkillName = new Map();
+
+    for (const offer of offers) {
+        if (!Array.isArray(offer.FCTM_skills)) continue;
+
+        // Evita duplicar una misma skill dentro de la misma oferta.
+        const uniqueVerifiedNamesInOffer = new Set();
+
+        for (const skill of offer.FCTM_skills) {
+            if (!skill || skill.FCTM_skill_verified !== true) continue;
+            if (!skill.FCTM_skill_name) continue;
+
+            const normalizedName = String(skill.FCTM_skill_name).trim();
+            if (!normalizedName) continue;
+
+            uniqueVerifiedNamesInOffer.add(normalizedName);
+        }
+
+        for (const skillName of uniqueVerifiedNamesInOffer) {
+            countsBySkillName.set(
+                skillName,
+                (countsBySkillName.get(skillName) || 0) + 1
+            );
+        }
+    }
+
+    return [...countsBySkillName.entries()]
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => (b.value - a.value) || a.name.localeCompare(b.name))
+        .slice(0, 4);
 };
 
 //Análisis de Soft Skills
