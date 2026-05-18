@@ -54,14 +54,28 @@ exports.obtenerHabilidades = async () => {
 
 //Distribución geográfica del alumnado
 exports.obtenerLocalidades = async () => {
-    // Simula: .aggregate([{ $group: { _id: "$localidad", value: { $sum: 1 } } }])
-    return [
-        { name: 'Villena', value: 45 },
-        { name: 'Almansa', value: 25 },
-        { name: 'Yecla', value: 18 },
-        { name: 'Biar', value: 12 },
-        { name: 'Caudete', value: 10 },
-        { name: 'Alicante', value: 8 },
-        { name: 'Elche', value: 5 }
-    ];
+    const UserManager = require('../models/userManager.model');
+
+    const resultado = await UserManager.aggregate([
+        {
+            $match: {
+                SAO_profile: 'ALUMNO',
+                SAO_student_city: { $exists: true, $nin: [null, ''] }
+            }
+        },
+        {
+            $group: {
+                _id: '$SAO_student_city',
+                value: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { value: -1 }
+        }
+    ]);
+
+    return resultado.map(item => ({
+        name: item._id,
+        value: item.value
+    }));
 };
