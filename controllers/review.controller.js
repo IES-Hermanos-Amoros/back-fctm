@@ -125,3 +125,13 @@ exports.deleteReviewById = wrapAsync(async (req, res, next) => {
     next(new AppError("Error al eliminar la reseña", 500));
   }
 });
+
+// Obtener el listado global de reseñas cruzando datos (Empresa y Alumno)
+exports.getGlobalReviewsList = wrapAsync(async (req, res, next) => {
+  try {
+    const reviews = await reviewService.getGlobalReviews();
+    res.status(200).json({ success: true, data: reviews });
+  } catch (error) {
+    next(new AppError("Error al sacar el listado global de reseñas", 500));
+  }
+});
