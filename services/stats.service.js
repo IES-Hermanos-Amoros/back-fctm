@@ -1,3 +1,6 @@
+const fctManager = require('../models/fctManager.model')
+const Skill = require('../models/skillManager.model')
+
 /**
  * TO DO
  * Implementar la lógica real de cada función utilizando consultas a MongoDB.
@@ -20,13 +23,38 @@ exports.obtenerConvenios = async () => {
     };
 };
 
+//Carolina
 //Gestión de histórico de FCTs
 exports.obtenerFcts = async () => {
-    // Simula una consulta a la colección 'fcts' agrupada por curso académico
-    return {
-        labels: ['21/22', '22/23', '23/24', '24/25', '25/26'],
-        data: [120, 150, 140, 190, 210]
-    };
+    try {
+        // Agrupamos las FCTs usando el campo real 'SAO_period'
+        const fctsPorPeriodo = await fctManager.aggregate([
+            {
+                $match: { 
+                    SAO_period: { $ne: null, $exists: true } 
+                }
+            },
+            {
+                $group: {
+                    _id: "$SAO_period", 
+                    count: { $sum: 1 }   
+                }
+            },
+            { 
+                $sort: { _id: 1 } 
+            }
+        ]);
+
+        // Mapeamos los resultados para estructurar la respuesta esperada por tu frontend
+        const labels = fctsPorPeriodo.map(item => item._id);
+        const data = fctsPorPeriodo.map(item => item.count);
+
+        return { labels, data };
+
+    } catch (error) {
+        console.error("Error en stats.service -> obtenerFcts:", error);
+        throw new Error("No se pudieron recopilar las estadísticas de las FCTs");
+    }
 };
 
 //Análisis de demanda tecnológica
@@ -41,15 +69,28 @@ exports.obtenerTopTecnologias = async () => {
     ];
 };
 
+//Carolina
 //Análisis de Soft Skills
 exports.obtenerHabilidades = async () => {
-    // Simula la obtención de habilidades mejor valoradas por las empresas en las encuestas
-    return [
-        { name: 'Trabajo Equipo', value: 35 },
-        { name: 'Resolución Problemas', value: 25 },
-        { name: 'Adaptabilidad', value: 20 },
-        { name: 'Comunicación', value: 20 }
-    ];
+    try {
+        // Consultamos el catálogo de habilidades ordenando por su contador de uso acumulativo
+        const habilidadesPopulares = await Skill.find({
+            FCTM_skill_usage_count: { $gt: 0 } 
+        })
+        .sort({ FCTM_skill_usage_count: -1 }) 
+        .limit(8)  //Limite de habilidades que se van a mostrar en el grafico                          
+        .lean();                              
+
+        // Transformamos los campos nativos (FCTM_skill_name, FCTM_skill_usage_count) al formato de la gráfica (name, value)
+        return habilidadesPopulares.map(skill => ({
+            name: skill.FCTM_skill_name,
+            value: skill.FCTM_skill_usage_count
+        }));
+
+    } catch (error) {
+        console.error("Error en stats.service -> obtenerHabilidades:", error);
+        throw new Error("No se pudieron recopilar las estadísticas de habilidades");
+    }
 };
 
 //Distribución geográfica del alumnado
