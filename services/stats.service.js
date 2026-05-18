@@ -1,21 +1,22 @@
 const fctManager = require('../models/fctManager.model')
 const Skill = require('../models/skillManager.model')
+const UserManager = require('../models/userManager.model')
 
 /**
  * TO DO
- * Implementar la lógica real de cada función utilizando consultas a MongoDB.
- * Cada función simula un resultado típico que podríamos obtener de la base de datos.
- * Asignar cada función a un alumno diferente para su implementación.
- * 
+ * Implementar la logica real de cada funcion utilizando consultas a MongoDB.
+ * Cada funcion simula un resultado tipico que podriamos obtener de la base de datos.
+ * Asignar cada funcion a un alumno diferente para su implementacion.
+ *
  * stats.service.js
- * 
- * Este servicio simula la obtención de datos de MongoDB.
- * Cada función puede ser asignada a un alumno diferente para 
- * implementar la lógica real
+ *
+ * Este servicio simula la obtencion de datos de MongoDB.
+ * Cada funcion puede ser asignada a un alumno diferente para
+ * implementar la logica real
  */
 const JobOfferManager = require("../models/jobOfferManager.model");
 
-//Gestión de histórico de convenios
+// Gestion de historico de convenios
 exports.obtenerConvenios = async () => {
     // Simula una consulta con: .aggregate([{ $group: { _id: "$curso", count: { $sum: 1 } } }])
     return {
@@ -24,25 +25,25 @@ exports.obtenerConvenios = async () => {
     };
 };
 
-//Carolina
-//Gestión de histórico de FCTs
+// Carolina
+// Gestion de historico de FCTs
 exports.obtenerFcts = async () => {
     try {
         // Agrupamos las FCTs usando el campo real 'SAO_period'
         const fctsPorPeriodo = await fctManager.aggregate([
             {
-                $match: { 
-                    SAO_period: { $ne: null, $exists: true } 
+                $match: {
+                    SAO_period: { $ne: null, $exists: true }
                 }
             },
             {
                 $group: {
-                    _id: "$SAO_period", 
-                    count: { $sum: 1 }   
+                    _id: "$SAO_period",
+                    count: { $sum: 1 }
                 }
             },
-            { 
-                $sort: { _id: 1 } 
+            {
+                $sort: { _id: 1 }
             }
         ]);
 
@@ -54,11 +55,11 @@ exports.obtenerFcts = async () => {
 
     } catch (error) {
         console.error("Error en stats.service -> obtenerFcts:", error);
-        throw new Error("No se pudieron recopilar las estadísticas de las FCTs");
+        throw new Error("No se pudieron recopilar las estadisticas de las FCTs");
     }
 };
 
-//Análisis de demanda tecnológica
+// Analisis de demanda tecnologica
 exports.obtenerTopTecnologias = async () => {
     const offers = await JobOfferManager.find({}, "FCTM_skills")
         .populate({
@@ -99,19 +100,19 @@ exports.obtenerTopTecnologias = async () => {
         .slice(0, 4);
 };
 
-//Carolina
-//Análisis de Soft Skills
+// Carolina
+// Analisis de Soft Skills
 exports.obtenerHabilidades = async () => {
     try {
-        // Consultamos el catálogo de habilidades ordenando por su contador de uso acumulativo
+        // Consultamos el catalogo de habilidades ordenando por su contador de uso acumulativo
         const habilidadesPopulares = await Skill.find({
-            FCTM_skill_usage_count: { $gt: 0 } 
+            FCTM_skill_usage_count: { $gt: 0 }
         })
-        .sort({ FCTM_skill_usage_count: -1 }) 
-        .limit(8)  //Limite de habilidades que se van a mostrar en el grafico                          
-        .lean();                              
+        .sort({ FCTM_skill_usage_count: -1 })
+        .limit(8)
+        .lean();
 
-        // Transformamos los campos nativos (FCTM_skill_name, FCTM_skill_usage_count) al formato de la gráfica (name, value)
+        // Transformamos al formato de la grafica (name, value)
         return habilidadesPopulares.map(skill => ({
             name: skill.FCTM_skill_name,
             value: skill.FCTM_skill_usage_count
@@ -119,20 +120,32 @@ exports.obtenerHabilidades = async () => {
 
     } catch (error) {
         console.error("Error en stats.service -> obtenerHabilidades:", error);
-        throw new Error("No se pudieron recopilar las estadísticas de habilidades");
+        throw new Error("No se pudieron recopilar las estadisticas de habilidades");
     }
 };
 
-//Distribución geográfica del alumnado
+// Distribucion geografica del alumnado
 exports.obtenerLocalidades = async () => {
-    // Simula: .aggregate([{ $group: { _id: "$localidad", value: { $sum: 1 } } }])
-    return [
-        { name: 'Villena', value: 45 },
-        { name: 'Almansa', value: 25 },
-        { name: 'Yecla', value: 18 },
-        { name: 'Biar', value: 12 },
-        { name: 'Caudete', value: 10 },
-        { name: 'Alicante', value: 8 },
-        { name: 'Elche', value: 5 }
-    ];
+    const resultado = await UserManager.aggregate([
+        {
+            $match: {
+                SAO_profile: 'ALUMNO',
+                SAO_student_city: { $exists: true, $nin: [null, ''] }
+            }
+        },
+        {
+            $group: {
+                _id: '$SAO_student_city',
+                value: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { value: -1 }
+        }
+    ]);
+
+    return resultado.map(item => ({
+        name: item._id,
+        value: item.value
+    }));
 };
