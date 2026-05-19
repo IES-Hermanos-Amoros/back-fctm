@@ -139,7 +139,9 @@ exports.getGlobalReviews = async () => {
                 FCTM_inserted_date: 1,
                 // Si la empresa tiene organización ponemos esa, si no, el nombre normal
                 empresa_nombre: { 
-                    $ifNull: [ "$empresa_datos.SAO_organization", "$empresa_datos.SAO_name", "Empresa no asignada" ] 
+                    //ERROR
+                    //$ifNull: [ "$empresa_datos.SAO_organization", "$empresa_datos.SAO_name", "Empresa no asignada" ] 
+                    $ifNull: [ "$empresa_datos.SAO_name", "Empresa no asignada" ] 
                 },
                 alumno_nombre: { 
                     $ifNull: [ "$alumno_datos.SAO_name", "Alumno Anónimo" ] 
