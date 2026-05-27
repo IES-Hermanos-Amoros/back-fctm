@@ -1,0 +1,82 @@
+Actualizar el sistema
+
+sudo apt update
+sudo apt upgrade -y
+
+
+
+Importar clave pública MongoDB
+
+curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
+   sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+
+
+
+
+Añadir repositorio MongoDB
+
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/8.0 multiverse" | \
+sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+
+
+
+Actualizar lista de paquetes
+
+sudo apt update
+
+
+
+Instalar MongoDB 8
+
+sudo apt install -y mongodb-org=8.0.8
+
+
+
+
+Iniciar y habilitar el servicio de MongoDB
+
+sudo systemctl start mongod
+sudo systemctl enable mongod
+
+
+
+
+Verificar
+
+sudo systemctl status mongod
+
+
+HABILITAR CONEXIONES REMOTAS
+
+sudo nano /etc/mongod.conf
+
+net:
+  port: 27017
+  bindIp: 0.0.0.0  #tendréis 127.0.0.1
+
+sudo systemctl restart mongod
+
+
+HABILITAR EL CORTAFUEGOS PARA MONGODB
+
+sudo ufw allow 27017/tcp
+
+
+
+
+
+-------------------------------------------------------------------------------
+Si hay error:
+
+Los siguientes paquetes tienen dependencias incumplidas: mongodb-org-mongos : Depende: libssl1.1 (>= 1.1.1) pero no es instalable mongodb-org-server : Depende: libssl1.1 (>= 1.1.1) pero no es instalable E: No se pudieron corregir los problemas, usted ha retenido paquetes rotos.
+
+Instalar manualmente el paquete libssl1.1 desde repositorios antiguos (Ubuntu 20.04). Aquí los pasos:
+
+wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+
+Y volver a probar la instalación:
+
+sudo apt install -y mongodb-org=8.0.8
+
+

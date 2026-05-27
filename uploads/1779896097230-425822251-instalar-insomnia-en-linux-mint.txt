@@ -1,0 +1,7 @@
+wget --quiet -O - https://insomnia.rest/keys/debian-public.key | sudo apt-key add -
+
+echo "deb https://download.konghq.com/insomnia-ubuntu/ default all" | sudo tee /etc/apt/sources.list.d/insomnia.list
+
+sudo apt update
+sudo apt install insomnia
+
