@@ -27,7 +27,18 @@ exports.login = async ({ username, password }) => {
   // Buscar usuario
   const user = await userManager
     .findOne({ SAO_username: username })
-    .select("+FCTM_password");
+    .populate({
+      path: "FCTM_documents",
+      match: { FCTM_document_type: "AVATAR" },
+      select: "FCTM_document_url", // El select del documento va DENTRO del objeto populate
+      options: {
+        sort: { FCTM_inserted_date: -1 },
+        limit: 1
+      }
+    }) // Aquí se cierra correctamente el objeto del populate
+    .select("+FCTM_password"); // El select del usuario se encadena al final de la query principal
+
+    console.log("Usuario recién logueado: ", user)
 
   if (!user) {
     //throw new AppError("Credenciales incorrectas", 401);
@@ -76,7 +87,10 @@ exports.login = async ({ username, password }) => {
       _id: user._id,
       SAO_id: user.SAO_id,
       profile: user.SAO_profile,
-      username: user.SAO_username
+      username: user.SAO_username,
+      avatar: user.FCTM_documents && user.FCTM_documents.length > 0 
+            ? user.FCTM_documents[0].FCTM_document_url 
+            : null
     }
   };
 };
