@@ -75,6 +75,11 @@ exports.getAll = async userProfile => {
 
 //devolver documento por su id
 exports.getById = async id => documentModel.findById(id)
+    .populate({
+      path: 'FCTM_document_created_by',
+      model: 'UserManager',
+      select: 'SAO_name SAO_profile SAO_email SAO_phone',
+    })
 
 //crear nuevo documento
 exports.create = async datos => {
@@ -122,7 +127,6 @@ exports.remove = async (id, userId = null, fctId = null, companyId = null) => {
   return deletedDoc
 }
 
-//INCORRECTO
 //insertar varios documentos
 exports.insertManyDocuments = async (files, datos) => {
   try {
@@ -130,80 +134,74 @@ exports.insertManyDocuments = async (files, datos) => {
       throw new Error('No se han recibido archivos para insertar.')
     }
 
-    //Solución ERROR
-    //construir los documentos a partir de req.files
-    /*const docsToInsert = files.map(file => ({
-      originalName: file.originalname,
-      fileName: file.filename,
-      mimeType: file.mimetype,
-      size: file.size,
-      url: `/uploads/${file.filename}`,
-      uploadedAt: new Date(),
-      user: userId || null,
-    }))*/
-    // visible_to_profiles puede llegar como string único o como array
-    let perfiles = datos?.visible_to_profiles || ['ADMINISTRADOR']
-    if (typeof perfiles === 'string') perfiles = [perfiles]
+    // 1. Normalización robusta de los perfiles que reciben visibilidad
+    let perfilesRaw = datos?.visible_to_profiles;
+    let perfiles = [];
 
+    if (!perfilesRaw) {
+      perfiles = ['ADMINISTRADOR', 'PROFESOR']; // Valor por defecto si viene completamente vacío
+    } else if (typeof perfilesRaw === 'string') {
+      if (perfilesRaw.includes(',')) {
+        perfiles = perfilesRaw.split(',').map(p => p.trim());
+      } else {
+        perfiles = [perfilesRaw.trim()];
+      }
+    } else if (Array.isArray(perfilesRaw)) {
+      perfiles = perfilesRaw;
+    }
+
+    // GESTIÓN CRÍTICA: Forzamos que ADMINISTRADOR y PROFESOR siempre estén incluidos en la lista de visibilidad
+    perfiles = [...new Set(['ADMINISTRADOR', 'PROFESOR', ...perfiles])];
+
+    // 2. Validación y casteo seguro del creador a ObjectId de Mongoose
+    const createdBy = datos?.createdBy && mongoose.Types.ObjectId.isValid(datos.createdBy)
+      ? new mongoose.Types.ObjectId(datos.createdBy)
+      : undefined;
+
+    // 3. Construcción del mapeo de inserción masiva
     const docsToInsert = files.map(file => ({
-      // Usar el nombre del input si existe; si no, el nombre del archivo
       FCTM_document_name: datos?.name || file.originalname,
-
       FCTM_document_description: datos?.description || '',
-
       FCTM_document_type: datos?.type || 'GENERAL',
-
-      FCTM_document_created_by: datos?.createdBy,
-
+      FCTM_document_created_by: createdBy, // Asignación limpia y segura
       FCTM_document_url: `/uploads/${file.filename}`,
-
       FCTM_visible_to_profiles: perfiles,
     }))
 
-    //insertar los documentos de una vez
+    // Insertar los documentos en la base de datos de una sola vez
     const insertedDocs = await documentModel.insertMany(docsToInsert)
 
-    //si hay userId, actualizar lista de documentos
-    if (datos.userId) {
-      const docIds = insertedDocs.map(doc => doc._id)
+    // 4. Inyección de referencias cruzadas (Relaciones en cascada)
+    const docIds = insertedDocs.map(doc => doc._id)
 
+    if (datos.userId) {
       await userManager.updateOne(
         { _id: datos.userId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }
 
-    //si hay userId, actualizar lista de documentos
     if (datos.jobOfferId) {
-      const docIds = insertedDocs.map(doc => doc._id)
-
       await jobOfferManager.updateOne(
         { _id: datos.jobOfferId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }
 
-    //si hay fctId, actualizar lista de documentos en FCT
     if (datos.fctId) {
-      const docIds = insertedDocs.map(doc => doc._id)
-
       await fctManager.updateOne(
         { _id: datos.fctId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }
 
-    //si hay companyId, actualizar lista de documentos en la empresa
     if (datos.companyId) {
-      const docIds = insertedDocs.map(doc => doc._id)
-
       await userManager.updateOne(
         { _id: datos.companyId },
         { $push: { FCTM_documents: { $each: docIds } } }
       )
     }
 
-    //devolver los documentos
     return insertedDocs
   } catch (error) {
     console.error('Error insertando varios documentos:', error)
@@ -211,31 +209,3 @@ exports.insertManyDocuments = async (files, datos) => {
   }
 }
 
-exports.insertManyDocumentsOLD2 = async (files, userId) => {
-  try {
-    // validación inicial de entrada
-    if (!files || files.length === 0) {
-      throw new Error('No hay archivos para insertar.')
-    }
-
-    const createdBy = mongoose.Types.ObjectId.isValid(userId)
-      ? new mongoose.Types.ObjectId(userId)
-      : undefined
-
-    //mapeo de docs a insertar
-    const docsToInsert = files.map(file => ({
-      FCTM_document_name: file.originalname,
-      FCTM_document_url: `/uploads/${file.filename}`,
-      FCTM_document_mimetype: file.mimetype,
-      FCTM_document_size: file.size,
-      FCTM_document_created_by: createdBy,
-      FCTM_document_created_date: new Date(),
-    }))
-
-    const result = await documentModel.insertMany(docsToInsert)
-    return result
-  } catch (error) {
-    console.error('Error al insertar documentos:', error.message)
-    throw new Error(`Error en la carga de archivos: ${error.message}`)
-  }
-}
