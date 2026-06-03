@@ -39,6 +39,9 @@ exports.getJobOfferById = async (id) => await jobOfferModel.findById(id).populat
 //Crear una nueva oferta de trabajo
 exports.createJobOffer = async (data) => {
     const { companyId, ...jobOfferData } = data || {}
+
+    console.log("Creando oferta de trabajo con datos:", jobOfferData, "y companyId:", companyId)
+
     const newJobOffer = new jobOfferModel(jobOfferData)
     const savedOffer = await newJobOffer.save()
 
