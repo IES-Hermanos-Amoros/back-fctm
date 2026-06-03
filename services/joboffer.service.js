@@ -27,7 +27,14 @@ exports.getJobOfferById = async (id) => await jobOfferModel.findById(id).populat
         path: "FCTM_skills",
         select: "_id FCTM_skill_name FCTM_skill_verified",
         match: { FCTM_skill_verified: true }
-    })//.populate("DocumentManager", "FCTM_document_name")
+    })
+    .populate({
+          path: "FCTM_documents",
+          select: "_id FCTM_document_name FCTM_document_url FCTM_document_type FCTM_inserted_date",
+          options: {
+            sort: { FCTM_inserted_date: -1 },
+          }
+        })
 
 //Crear una nueva oferta de trabajo
 exports.createJobOffer = async (data) => {

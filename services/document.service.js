@@ -153,6 +153,8 @@ exports.insertManyDocuments = async (files, datos) => {
     // GESTIÓN CRÍTICA: Forzamos que ADMINISTRADOR y PROFESOR siempre estén incluidos en la lista de visibilidad
     perfiles = [...new Set(['ADMINISTRADOR', 'PROFESOR', ...perfiles])];
 
+    console.log('Perfiles procesados para visibilidad:', perfiles)
+
     // 2. Validación y casteo seguro del creador a ObjectId de Mongoose
     const createdBy = datos?.createdBy && mongoose.Types.ObjectId.isValid(datos.createdBy)
       ? new mongoose.Types.ObjectId(datos.createdBy)

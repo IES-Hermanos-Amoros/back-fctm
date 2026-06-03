@@ -13,10 +13,10 @@ router.get("/",protect,restrictTo("ADMINISTRADOR","PROFESOR","ALUMNO"),jobOfferC
 router.post("/",protect,restrictTo("ADMINISTRADOR","PROFESOR","EMPRESA"),jobOfferController.postJobOffer)
 
 //Mostrar un job offer conseguido por id
-//Logueado y ser admin, teacher o la empresa que ha creado la oferta de trabajo (owner)
+//Logueado y ser admin, teacher, alumno o la empresa que ha creado la oferta de trabajo (owner)
 router.get("/:id",
     protect,
-    isOwnerArray(UserManager, "FCTM_job_offers", ["ADMINISTRADOR", "PROFESOR"],
+    isOwnerArray(UserManager, "FCTM_job_offers", ["ADMINISTRADOR", "PROFESOR", "ALUMNO"],
     "id", 
     false),
     jobOfferController.findJobOfferById)
