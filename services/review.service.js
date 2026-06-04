@@ -92,6 +92,12 @@ exports.allDelete = async (ids) => {
 // Listado global cruzando datos de Empresa y Alumno para la vista de admin/profes
 exports.getGlobalReviews = async () => {
     return await reviewModel.aggregate([
+        // 2. FILTRO: Añadimos el $match al principio para procesar solo las reseñas deseadas
+        { 
+            $match: { 
+                FCTM_review_verified: true 
+            } 
+        },
         // Ordenar por fecha de inserción (de más nueva a más vieja)
         { $sort: { FCTM_inserted_date: -1 } },
 

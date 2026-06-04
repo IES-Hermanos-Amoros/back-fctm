@@ -24,7 +24,7 @@ router.get(
 router.get(
   "/reviews",
   protect,
-  restrictTo("ADMINISTRADOR", "PROFESOR"),
+  restrictTo("ADMINISTRADOR", "PROFESOR","ALUMNO"),
   reviewController.getGlobalReviewsList
 );
 
@@ -46,7 +46,7 @@ router.delete(
 router.get(
   "/:id",
   protect,
-  isOwner(ReviewManager, "FCTM_user_id", ["ADMINISTRADOR", "PROFESOR"]),
+  isOwner(ReviewManager, "FCTM_user_id", ["ADMINISTRADOR", "PROFESOR", "ALUMNO"]),
   reviewController.getReviewById,
 );
 
