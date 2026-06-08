@@ -66,7 +66,8 @@ router.delete(
   jwt.protect,
   isOwnerMW.isOwner(DocumentManager, 'FCTM_document_created_by', [
     'ADMINISTRADOR',
-    'PROFESOR'
+    'PROFESOR',
+    'EMPRESA'
   ]),
   //authorizeDocumentAccess('delete'),
   documentController.deleteDocumentById

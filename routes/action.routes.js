@@ -30,6 +30,7 @@ router.patch(
   "/:id",
   protect,
   restrictTo("ADMINISTRADOR","PROFESOR"),
+  upload.array("files",10), validateAndScanFiles,
   actionController.editActionById
 )
 

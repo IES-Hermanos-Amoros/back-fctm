@@ -92,7 +92,8 @@ exports.createJWT = (req, res, next, userData, cookieName = 'jwt', expireTimeMs 
       id: userData._id,
       SAO_id: userData.SAO_id || null, // Agregamos los datos de SAO al payload
       tokenType: cookieName,
-      avatar:userData.avatar || null
+      avatar:userData.avatar || null,
+      name:userData.name
     }
 
     // Convertimos milisegundos a segundos para la opción 'expiresIn' de JWT

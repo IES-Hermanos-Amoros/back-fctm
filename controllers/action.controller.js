@@ -42,7 +42,7 @@ exports.newAction = wrapAsync(async (req,res) => {
 
 exports.editActionById = wrapAsync(async (req,res) => {
     const { id } = req.params
-    const actionUpdated = await ActionService.update(id, req.body)
+    const actionUpdated = await ActionService.update(id, req.body, req.files)
     if(actionUpdated){
         res.status(200).json(actionUpdated)
     } else {

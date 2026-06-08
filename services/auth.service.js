@@ -90,7 +90,8 @@ exports.login = async ({ username, password }) => {
       username: user.SAO_username,
       avatar: user.FCTM_documents && user.FCTM_documents.length > 0 
             ? user.FCTM_documents[0].FCTM_document_url 
-            : null
+            : null,
+      name: user.SAO_name
     }
   };
 };
