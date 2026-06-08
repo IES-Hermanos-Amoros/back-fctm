@@ -26,8 +26,14 @@ exports.getById = async (id) => {
             options: { sort: { FCTM_inserted_date: -1 } }
         }).populate({
             path: "FCTM_actions",
-            select: "FCTM_action_title FCTM_action_type FCTM_action_datetime FCTM_action_notes FCTM_inserted_date FCTM_documents",
-            options: { sort: { FCTM_action_datetime: -1 } }
+            select: "FCTM_action_title FCTM_action_type FCTM_action_datetime FCTM_action_notes FCTM_inserted_date FCTM_documents FCTM_created_by",
+            options: { sort: { FCTM_action_datetime: -1 } },
+            // 🔥 NUEVO: Sub-populate para resolver el creador de la acción
+            populate: {
+                path: "FCTM_created_by",
+                model: "UserManager", // Forzamos el modelo por si acaso
+                select: "SAO_name SAO_profile SAO_email" // Traemos solo lo necesario para el frontend
+            }
         }).populate({
           path: "FCTM_documents",
           select: "_id FCTM_document_name FCTM_document_url FCTM_document_type FCTM_inserted_date",
