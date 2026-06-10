@@ -130,14 +130,18 @@ exports.logout = wrapAsync(async (req, res, next) => {
     res.clearCookie("jwt", {
         httpOnly: true,
         secure: true, // Mantener igual que cuando se creó
-        sameSite: "none"
+        sameSite: "none",
+        path: "/", // Aseguramos el path raíz
     });
     
     // Borramos la cookie 'SAOtoken' 
     res.clearCookie("SAOtoken", {
         httpOnly: true,
         secure: true, // Mantener igual que cuando se creó
-        sameSite: "none"
+        sameSite: "none",
+        path: "/", // Aseguramos el path raíz
+        expires: new Date(0), // ◄ FUERZA la fecha al 1 de enero de 1970
+        maxAge: 0             // ◄ Le dice al navegador que dura 0 segundos
     });
 
     res.status(200).json({
